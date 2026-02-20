@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Lista de Atletas</h2>
+
+{% if atletas %}
+    <ul>
+        {% for atleta in atletas %}
+            <li>
+                {{ atleta.nome }} - {{ atleta.modalidade }} - {{ atleta.categoria }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Nenhum atleta cadastrado.</p>
+{% endif %}
+
+{% endblock %}  

@@ -33,13 +33,22 @@ def home():
     return render_template("index.html")
 
 
+#defino a rota "atletas" onde serão listados todos atletas cadastrados no DB.
+@app.route("/atletas")
+def listar_atletas():
+    atletas = Atleta.query.all() 
+    #Executa uma query na tabela representada pela classe Atleta, retornando todos os registros como uma lista de objetos.
+    return render_template("atletas.html", atletas = atletas) 
+    # Envia a lista de atletas para o template, tornando-a disponível no front-end.
+
+
+
 
 # Ativa o contexto da aplicação Flask para permitir acesso às configurações
 # e cria no banco de dados todas as tabelas definidas pelas classes
 # que herdam de db.Model (caso ainda não existam)
 with app.app_context():
     db.create_all()
-
 
 
 
