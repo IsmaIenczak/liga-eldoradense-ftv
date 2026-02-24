@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -12,16 +12,19 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-#criação da classe atleta herdando a classe db.model do SQLAlchemy, facilitando a crianção da tabela de banco de dados
 class Atleta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     nome = db.Column(db.String(100), nullable=False)
-    idade = db.Column(db.Integer, nullable=False)
-    modalidade = db.Column(db.String(50), nullable=False)
-    categoria = db.Column(db.String(50), nullable=False)
+
+    cpf = db.Column(db.String(11), nullable=False, unique=True)
+
+    sexo = db.Column(db.String(10), nullable=False)
+
+    nivel = db.Column(db.String(20), nullable=False)
 
     def __repr__(self):
-        return f'<Atleta {self.nome}>'
+        return f"<Atleta {self.nome}>"
 
 
 
@@ -33,6 +36,7 @@ def home():
     return render_template("index.html")
 
 
+
 #defino a rota "atletas" onde serão listados todos atletas cadastrados no DB.
 @app.route("/atletas")
 def listar_atletas():
@@ -42,6 +46,31 @@ def listar_atletas():
     # Envia a lista de atletas para o template, tornando-a disponível no front-end.
 
 
+
+#Criando a rota para criação de cadastros
+@app.route("/atletas/novo", methods=["GET", "POST"])
+def cadastrar_atleta():
+    
+    if request.method == "POST":
+
+        nome = request.form.get("nome")
+        cpf = request.form.get("cpf")
+        sexo = request.form.get("sexo")
+        nivel = request.form.get("nivel")
+
+        novo_atleta = Atleta(
+            nome=nome,
+            cpf=cpf,
+            sexo=sexo,
+            nivel=nivel
+        )
+
+        db.session.add(novo_atleta)
+        db.session.commit()
+
+        return redirect(url_for("listar_atletas"))
+    
+    return render_template("novo_atleta.html")
 
 
 # Ativa o contexto da aplicação Flask para permitir acesso às configurações

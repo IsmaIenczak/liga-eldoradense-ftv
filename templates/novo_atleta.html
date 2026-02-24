@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Cadastrar Novo Atleta</h2>
+
+<form method="POST">
+
+    <label>Nome:</label>
+    <input type="text" name="nome" required><br><br>
+
+    <label>CPF:</label>
+    <input type="text" name="cpf" required><br><br>
+
+    <label>Sexo:</label>
+    <select name="sexo" required>
+        <option value="masculino">Masculino</option>
+        <option value="feminino">Feminino</option>
+    </select><br><br>
+
+    <label>Nível:</label>
+    <select name="nivel" required>
+        <option value="iniciante">Iniciante</option>
+        <option value="intermediario">Intermediário</option>
+        <option value="avancado">Avançado</option>
+    </select><br><br>
+
+    <button type="submit">Cadastrar</button>
+
+</form>
+
+{% endblock %}
