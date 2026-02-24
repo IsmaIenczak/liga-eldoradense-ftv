@@ -47,7 +47,7 @@ def listar_atletas():
 
 
 
-#Criando a rota para criação de cadastros
+#defino a rota para criação de cadastros
 @app.route("/atletas/novo", methods=["GET", "POST"])
 def cadastrar_atleta():
     
@@ -58,12 +58,28 @@ def cadastrar_atleta():
         sexo = request.form.get("sexo")
         nivel = request.form.get("nivel")
 
+        #Validação de formato CPF
+        if not cpf.isdigit() or len(cpf) != 11:
+            return render_template(
+                "novo_atleta.html",
+                erro="CPF deve conter exatamente 11 números."
+            )
+        
+        #Verificação de duplicidade CPF
+        cpf_existente = Atleta.query.filter_by(cpf=cpf).first()
+        if cpf_existente:
+            return render_template(
+                "novo_atleta.html",
+                erro="CPF já cadastrado no sistema."
+            )
+
         novo_atleta = Atleta(
             nome=nome,
             cpf=cpf,
             sexo=sexo,
             nivel=nivel
         )
+
 
         db.session.add(novo_atleta)
         db.session.commit()

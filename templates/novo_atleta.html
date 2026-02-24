@@ -2,7 +2,16 @@
 
 {% block content %}
 
+
+
+
 <h2>Cadastrar Novo Atleta</h2>
+
+
+{% if erro %}
+    <p style="color: red;">{{ erro }}</p>
+{% endif %}
+
 
 <form method="POST">
 
@@ -28,5 +37,8 @@
     <button type="submit">Cadastrar</button>
 
 </form>
+
+
+
 
 {% endblock %}
