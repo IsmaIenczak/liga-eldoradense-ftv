@@ -1,0 +1,13 @@
+<h2>Eventos Cadastrados</h2>
+
+<ul>
+    {% for evento in eventos %}
+        <li>
+            <strong>{{ evento.nome }}</strong><br>
+            Data: {{ evento.data }}<br>
+            Local: {{ evento.arena }}<br>
+            Endereço: {{ evento.rua }} - nº {{ evento.numero }} - {{ evento.cidade }} - CEP: {{ evento.cep }} 
+            <br><br>
+        </li>
+    {% endfor %}
+</ul>

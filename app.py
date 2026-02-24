@@ -89,6 +89,70 @@ def cadastrar_atleta():
     return render_template("novo_atleta.html")
 
 
+
+
+#Crio a classe Evento
+from datetime import datetime
+class Evento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    data = db.Column(db.Date, nullable=False)
+
+    arena = db.Column(db.String(100), nullable=False)
+    rua = db.Column(db.String(150), nullable=False)
+    cidade = db.Column(db.String(100), nullable=False)
+    cep = db.Column(db.String(8), nullable=False)
+    numero = db.Column(db.Integer, nullable=False)
+    def __repr__(self):
+        return f"<Evento {self.nome}>"   
+
+#defino a rota para mostrar os eventos vigentes
+@app.route("/eventos")
+def listar_eventos():
+    eventos = Evento.query.all()
+    return render_template("eventos.html", eventos=eventos)
+
+
+#Defino a rota para cadastar eventos - Adicionar proteção à essa rota futuramente - somente admin
+@app.route("/eventos/novo", methods=["GET", "POST"])
+def cadastrar_evento():
+
+    if request.method == "POST":
+        nome = request.form.get("nome")
+        data_str = request.form.get("data")
+        arena = request.form.get("arena")
+        rua = request.form.get("rua")
+        cidade = request.form.get("cidade")
+        cep = request.form.get("cep")
+        numero = request.form.get("numero")
+
+        data = datetime.strptime(data_str, "%Y-%m-%d").date()
+
+        novo_evento = Evento(
+            nome=nome,
+            data=data,
+            arena = arena,
+            rua = rua,
+            cidade = cidade,
+            cep = cep,
+            numero = numero,
+
+        )
+
+        db.session.add(novo_evento)
+        db.session.commit()
+
+        return redirect(url_for("listar_eventos"))
+
+    return render_template("novo_evento.html")
+
+
+
+
+
+
+
+
 # Ativa o contexto da aplicação Flask para permitir acesso às configurações
 # e cria no banco de dados todas as tabelas definidas pelas classes
 # que herdam de db.Model (caso ainda não existam)
