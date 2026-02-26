@@ -85,6 +85,8 @@ def cadastrar_atleta():
     return render_template("novo_atleta.html")
 
 
+
+
 #Rota para criar categorias - faz-se necessária para que possam ser criadas categorias especificas para cada evento
 #proteger rota depois - admin
 @app.route("/categorias/nova", methods=["GET", "POST"])
@@ -94,13 +96,13 @@ def nova_categoria():
 
     if request.method == "POST":
         nome = request.form.get("nome")
-        sexo = request.form.get("sexo")
+        modalidade = request.form.get("modalidade")
         nivel = request.form.get("nivel")
         evento_id = request.form.get("evento")
 
         nova = Categoria(
             nome=nome,
-            sexo=sexo,
+            modalidade=modalidade,
             nivel=nivel,
             evento_id=evento_id
         )
@@ -115,10 +117,8 @@ def nova_categoria():
 
 
 
-
 @app.route("/inscricoes/nova", methods=["GET", "POST"])
 def nova_inscricao():
-
     atletas = Atleta.query.all()
     categorias = Categoria.query.all()
 
@@ -131,29 +131,44 @@ def nova_inscricao():
         atleta2 = Atleta.query.get(atleta2_id)
         categoria = Categoria.query.get(categoria_id)
 
+        if not atleta1 or not atleta2 or not categoria:
+            flash("Dados inválidos.", "error")
+            return redirect(url_for("nova_inscricao"))
+
         # Não pode ser a mesma pessoa
         if atleta1_id == atleta2_id:
             flash("Selecione atletas diferentes", "error")
             return redirect(url_for("nova_inscricao"))
 
-
         # Níveis precisam ser iguais
         if atleta1.nivel.strip().lower() != atleta2.nivel.strip().lower():
             flash("Os atletas devem estar no mesmo nível", "error")
             return redirect(url_for("nova_inscricao"))
- 
 
         # Categoria precisa bater com o nível
         if categoria.nivel.strip().lower() != atleta1.nivel.strip().lower():
             flash("A categoria selecionada deve estar de acordo com nível do atleta", "error")
             return redirect(url_for("nova_inscricao"))
-       
+
         # Sexo precisa bater com a categoria
-        if categoria.sexo.strip().lower() != atleta1.sexo.strip().lower() or categoria.sexo.strip().lower() != atleta2.sexo.strip().lower():
-            flash("O gênero da categoria não corresponde aos atletas.", "error")       
-            return redirect(url_for("nova_inscricao"))
+        modalidade = categoria.modalidade.lower()
+        sexo1 = atleta1.sexo.lower()
+        sexo2 = atleta2.sexo.lower()
 
+        if modalidade == "masculino":
+            if sexo1 != "masculino" or sexo2 != "masculino":
+                flash("This category is male only.", "error")
+                return redirect(url_for("nova_inscricao"))
 
+        elif modalidade == "feminino":
+            if sexo1 != "feminino" or sexo2 != "feminino":
+                flash("This category is female only.", "error")
+                return redirect(url_for("nova_inscricao"))
+
+        elif modalidade == "misto":
+            if sexo1 == sexo2:
+                flash("Mixed category requires one male and one female athlete.", "error")
+                return redirect(url_for("nova_inscricao"))
 
         nova = Inscricao(
             atleta1_id=atleta1_id,
@@ -164,18 +179,11 @@ def nova_inscricao():
         db.session.add(nova)
         db.session.commit()
 
-        flash("Inscrição realizada com sucesso!", "sucess")
-
+        flash("Inscrição realizada com sucesso!", "success")
         return redirect(url_for("nova_inscricao"))
 
-
-
-    return render_template(
-        "nova_inscricao.html",
-        atletas=atletas,
-        categorias=categorias
-    )
-
+    # GET request
+    return render_template("nova_inscricao.html", atletas=atletas, categorias=categorias)
 
 
 
@@ -199,13 +207,14 @@ class Evento(db.Model):
 class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
-    sexo = db.Column(db.String(20), nullable=False)  
+    modalidade = db.Column(db.String(20))  
     nivel = db.Column(db.String(20), nullable=False)
     # Cria uma coluna na tabela categoria que só pode armazenar, valores que já existam na coluna id da tabela evento, garantindo a integridade referencial no banco de dados.
     evento_id = db.Column(db.Integer, db.ForeignKey("evento.id"), nullable=False)
     evento = db.relationship("Evento", backref="categorias")
     def __repr__(self):
         return f"<Categoria {self.nome}>"
+
 
 
 
