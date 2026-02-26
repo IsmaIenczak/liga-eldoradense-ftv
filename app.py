@@ -1,9 +1,13 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 
 
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "chave_para_teste"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key")
 
 
 #Configuro o banco de dados do app atraves do metodo config do SQLAlchemy
