@@ -11,21 +11,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 #Crio o banco de dados para o app através da classe SQLAlchemy
 db = SQLAlchemy(app)
 
-
 class Atleta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     nome = db.Column(db.String(100), nullable=False)
-
     cpf = db.Column(db.String(11), nullable=False, unique=True)
-
     sexo = db.Column(db.String(10), nullable=False)
-
     nivel = db.Column(db.String(20), nullable=False)
-
     def __repr__(self):
         return f"<Atleta {self.nome}>"
-
 
 
 @app.route("/")
@@ -36,7 +29,6 @@ def home():
     return render_template("index.html")
 
 
-
 #defino a rota "atletas" onde serão listados todos atletas cadastrados no DB.
 @app.route("/atletas")
 def listar_atletas():
@@ -44,7 +36,6 @@ def listar_atletas():
     #Executa uma query na tabela representada pela classe Atleta, retornando todos os registros como uma lista de objetos.
     return render_template("atletas.html", atletas = atletas) 
     # Envia a lista de atletas para o template, tornando-a disponível no front-end.
-
 
 
 #defino a rota para criação de cadastros
@@ -80,7 +71,6 @@ def cadastrar_atleta():
             nivel=nivel
         )
 
-
         db.session.add(novo_atleta)
         db.session.commit()
 
@@ -89,15 +79,74 @@ def cadastrar_atleta():
     return render_template("novo_atleta.html")
 
 
+#Rota para criar categorias - faz-se necessária para que possam ser criadas categorias especificas para cada evento
+#proteger rota depois - admin
+@app.route("/categorias/nova", methods=["GET", "POST"])
+def nova_categoria():
+
+    eventos = Evento.query.all()
+
+    if request.method == "POST":
+        nome = request.form.get("nome")
+        sexo = request.form.get("sexo")
+        nivel = request.form.get("nivel")
+        evento_id = request.form.get("evento")
+
+        nova = Categoria(
+            nome=nome,
+            sexo=sexo,
+            nivel=nivel,
+            evento_id=evento_id
+        )
+
+        db.session.add(nova)
+        db.session.commit()
+
+        return redirect(url_for("listar_eventos"))
+
+    return render_template("nova_categoria.html", eventos=eventos)
 
 
-#Crio a classe Evento
+
+
+
+@app.route("/inscricoes/nova", methods=["GET", "POST"])
+def nova_inscricao():
+
+    atletas = Atleta.query.all()
+    categorias = Categoria.query.all()
+
+    if request.method == "POST":
+        atleta1_id = request.form.get("atleta1")
+        atleta2_id = request.form.get("atleta2")
+        categoria_id = request.form.get("categoria")
+
+        nova = Inscricao(
+            atleta1_id=atleta1_id,
+            atleta2_id=atleta2_id,
+            categoria_id=categoria_id
+        )
+
+        db.session.add(nova)
+        db.session.commit()
+
+        return redirect(url_for("home"))
+
+    return render_template(
+        "nova_inscricao.html",
+        atletas=atletas,
+        categorias=categorias
+    )
+
+
+
+
+#Crio a classe/tabela no db Evento
 from datetime import datetime
 class Evento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     data = db.Column(db.Date, nullable=False)
-
     arena = db.Column(db.String(100), nullable=False)
     rua = db.Column(db.String(150), nullable=False)
     cidade = db.Column(db.String(100), nullable=False)
@@ -106,11 +155,46 @@ class Evento(db.Model):
     def __repr__(self):
         return f"<Evento {self.nome}>"   
 
+
+
+
+class Categoria(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    sexo = db.Column(db.String(20), nullable=False)  
+    nivel = db.Column(db.String(20), nullable=False)
+    # Cria uma coluna na tabela categoria que só pode armazenar, valores que já existam na coluna id da tabela evento, garantindo a integridade referencial no banco de dados.
+    evento_id = db.Column(db.Integer, db.ForeignKey("evento.id"), nullable=False)
+    evento = db.relationship("Evento", backref="categorias")
+    def __repr__(self):
+        return f"<Categoria {self.nome}>"
+
+
+
+class Inscricao(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    atleta1_id = db.Column(db.Integer, db.ForeignKey("atleta.id"), nullable=False)
+    atleta2_id = db.Column(db.Integer, db.ForeignKey("atleta.id"), nullable=False)
+    categoria_id = db.Column(db.Integer, db.ForeignKey("categoria.id"), nullable=False)
+    # Relacionamentos
+    atleta1 = db.relationship("Atleta", foreign_keys=[atleta1_id])
+    atleta2 = db.relationship("Atleta", foreign_keys=[atleta2_id])
+    categoria = db.relationship("Categoria", backref="inscricoes")
+    def __repr__(self):
+        return f"<Inscricao {self.id}>"
+
+
+
+
+
 #defino a rota para mostrar os eventos vigentes
 @app.route("/eventos")
 def listar_eventos():
     eventos = Evento.query.all()
     return render_template("eventos.html", eventos=eventos)
+
+
+
 
 
 #Defino a rota para cadastar eventos - Adicionar proteção à essa rota futuramente - somente admin

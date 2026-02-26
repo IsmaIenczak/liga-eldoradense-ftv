@@ -1,0 +1,36 @@
+<h2>Nova Inscrição</h2>
+
+<form method="POST">
+
+    <label>Atleta 1:</label>
+    <select name="atleta1" required>
+        {% for atleta in atletas %}
+            <option value="{{ atleta.id }}">{{ atleta.nome }}</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label>Atleta 2:</label>
+    <select name="atleta2" required>
+        {% for atleta in atletas %}
+            <option value="{{ atleta.id }}">{{ atleta.nome }}</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label>Categoria:</label>
+    <select name="categoria" required>
+        {% for categoria in categorias %}
+            <option value="{{ categoria.id }}">
+                {{ categoria.nome }} - {{ categoria.nivel }} - {{ categoria.sexo }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <button type="submit">Inscrever Dupla</button>
+
+</form>
