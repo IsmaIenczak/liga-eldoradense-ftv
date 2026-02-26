@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
+app.secret_key = "chave_para_teste"
+
 
 #Configuro o banco de dados do app atraves do metodo config do SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///liga.db'
@@ -121,6 +123,34 @@ def nova_inscricao():
         atleta2_id = request.form.get("atleta2")
         categoria_id = request.form.get("categoria")
 
+        atleta1 = Atleta.query.get(atleta1_id)
+        atleta2 = Atleta.query.get(atleta2_id)
+        categoria = Categoria.query.get(categoria_id)
+
+        # Não pode ser a mesma pessoa
+        if atleta1_id == atleta2_id:
+            flash("Selecione atletas diferentes", "error")
+            return redirect(url_for("nova_inscricao"))
+
+
+        # Níveis precisam ser iguais
+        if atleta1.nivel.strip().lower() != atleta2.nivel.strip().lower():
+            flash("Os atletas devem estar no mesmo nível", "error")
+            return redirect(url_for("nova_inscricao"))
+ 
+
+        # Categoria precisa bater com o nível
+        if categoria.nivel.strip().lower() != atleta1.nivel.strip().lower():
+            flash("A categoria selecionada deve estar de acordo com nível do atleta", "error")
+            return redirect(url_for("nova_inscricao"))
+       
+        # Sexo precisa bater com a categoria
+        if categoria.sexo.strip().lower() != atleta1.sexo.strip().lower() or categoria.sexo.strip().lower() != atleta2.sexo.strip().lower():
+            flash("O gênero da categoria não corresponde aos atletas.", "error")       
+            return redirect(url_for("nova_inscricao"))
+
+
+
         nova = Inscricao(
             atleta1_id=atleta1_id,
             atleta2_id=atleta2_id,
@@ -130,7 +160,11 @@ def nova_inscricao():
         db.session.add(nova)
         db.session.commit()
 
-        return redirect(url_for("home"))
+        flash("Inscrição realizada com sucesso!", "sucess")
+
+        return redirect(url_for("nova_inscricao"))
+
+
 
     return render_template(
         "nova_inscricao.html",
@@ -229,10 +263,6 @@ def cadastrar_evento():
         return redirect(url_for("listar_eventos"))
 
     return render_template("novo_evento.html")
-
-
-
-
 
 
 
