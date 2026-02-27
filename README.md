@@ -1,107 +1,160 @@
-# 🏐 Liga Eldoradense de Futevôlei – Sistema Web com Flask
+# 🏐 Liga Eldoradense de Futevôlei
 
-Aplicação web desenvolvida com Flask para gerenciamento de atletas e etapas da Liga Eldoradense de Futevôlei, utilizando arquitetura baseada em templates (Jinja2) e integração com banco de dados relacional via SQLAlchemy.
+Sistema web desenvolvido em Flask para gerenciamento da Liga Eldoradense de Futevôlei.
+
+O objetivo do projeto é permitir o cadastro e organização de:
+
+- Atletas
+- Eventos (etapas)
+- Categorias por evento
+- Inscrições de duplas por categoria
 
 ---
 
 ## 🚀 Tecnologias utilizadas
 
-- Python  
-- Flask  
-- SQLAlchemy  
-- SQLite  
-- HTML5  
-- Jinja2  
+- Python 3
+- Flask
+- Flask-SQLAlchemy
+- SQLite
+- HTML (Jinja2 Templates)
+- python-dotenv
 
 ---
 
 ## 📌 Funcionalidades atuais
 
-- Estrutura base do projeto
-- Configuração de banco de dados com SQLAlchemy
-- Criação do modelo `Atleta`
-- Template base com herança (Jinja2)
-- Servidor Flask rodando em modo desenvolvimento
+### 👤 Atletas
+- Cadastro de atletas
+- Validação de CPF (11 dígitos numéricos)
+- Impede CPF duplicado
+
+### 🏟 Eventos
+- Cadastro de eventos (etapas)
+- Informações de local e data
+
+### 🏆 Categorias
+- Criadas por evento
+- Definidas por:
+  - Modalidade (Masculino, Feminino, Misto)
+  - Nível (Iniciante, Intermediário, Avançado)
+- Impede categoria duplicada no mesmo evento
+- Nome da categoria é gerado dinamicamente (Modalidade + Nível)
+
+### 📝 Inscrições
+- Inscrição de dupla por categoria
+- Validações implementadas:
+  - Atletas devem ser diferentes
+  - Devem ter o mesmo nível
+  - Categoria deve corresponder ao nível da dupla
+  - Modalidade deve corresponder ao sexo dos atletas
+  - Impede dupla duplicada na mesma categoria
+  - Impede atleta inscrito duas vezes na mesma categoria
+  - Categoria deve pertencer ao evento selecionado
 
 ---
 
-## 📂 Estrutura do projeto
+## 🔄 Fluxo recomendado de uso
 
+1. Criar um evento
+2. Criar categorias vinculadas ao evento
+3. Cadastrar atletas
+4. Realizar inscrições
+
+### Atletas devem ser previamente cadastrados na rota global
+
+---
+
+## ⚙️ Como rodar localmente
+
+1) - Clonar o repositório
+bash
+git clone https://github.com/IsmaIenczak/liga-eldoradense-ftv.git
+cd liga-eldoradense-ftv
+
+--------------------------------------------------------------------------------
+
+2) Criar e ativar ambiente virtual:
+
+python -m venv venv
+
+Windows:
+venv\Scripts\activate
+
+Linux/Mac:
+source venv/bin/activate
+
+--------------------------------------------------------------------------------
+
+3) Instalar dependências
+pip install -r requirements.txt
+
+--------------------------------------------------------------------------------
+
+
+4) Criar arquivo .env
+
+⚠️ O arquivo .env não deve ser versionado.
+
+Crie um arquivo chamado .env na raiz do projeto:
+
+SECRET_KEY=sua-chave-super-secreta-aqui
+
+Se não existir SECRET_KEY, o app usa um fallback de desenvolvimento (dev-key).
+Para produção, configure uma chave forte (e nunca versione o .env).
+
+--------------------------------------------------------------------------------
+
+5) Executar
+python app.py
+
+Acesse:
+
+http://127.0.0.1:5000
+
+🗄️ Banco de dados
+
+Banco local em SQLite
+
+Arquivo: liga.db
+
+As tabelas são criadas automaticamente no start via db.create_all().
+
+--------------------------------------------------------------------------------
+
+📁 Estrutura do projeto:
 
 liga-eldoradense-ftv/
 │
 ├── app.py
-├── templates/
-├── static/
-├── instance/ (não versionado)
-├── venv/ (não versionado)
 ├── requirements.txt
-└── README.md
+├── README.md
+├── .env (não versionado)
+│
+└── templates/
+    ├── base.html
+    ├── novo_atleta.html
+    ├── novo_evento.html
+    ├── nova_categoria.html
+    ├── nova_inscricao.html
+
+--------------------------------------------------------------------------------
 
 
----
+🛣️ Próximos passos (ideias)
 
-## ⚙️ Como rodar o projeto localmente
+- Modularização do sistema
 
-1. Clone o repositório:
+- CRUD completo (editar/excluir) para atletas, eventos, categorias e inscrições
 
+- Painel administrativo (proteção de rotas)
 
-git clone https://github.com/seu-usuario/liga-eldoradense-ftv.git
+- Melhorias de UX no front (ex.: selects dependentes e listagens melhores)
 
+- Relatórios por evento/categoria (ex.: lista de inscritos por categoria)
 
-2. Crie o ambiente virtual:
+- Seed de dados para desenvolvimento
 
+    👤 Autor
 
-python -m venv venv
-
-
-3. Ative o ambiente virtual:
-
-Windows:
-
-venv\Scripts\activate
-
-
-4. Instale as dependências:
-
-
-pip install -r requirements.txt
-
-
-5. Execute o projeto:
-
-
-python app.py
-
-
-O servidor estará disponível em:
-
-
-http://127.0.0.1:5000
-
-
----
-
-## 🔐 Boas práticas adotadas
-
-- Uso de ambiente virtual (venv)
-- Arquivos sensíveis ignorados via `.gitignore`
-- Banco de dados não versionado
-- Estrutura preparada para expansão com CRUD completo
-- Separação entre lógica de backend e templates
-
----
-
-## 🚧 Projeto em desenvolvimento
-
-Este projeto faz parte do meu aprendizado em desenvolvimento web com Flask e será expandido com funcionalidades como:
-
-- CRUD completo de atletas
-- Validação de dados
-- Melhorias de segurança
-- Organização modular do código
-- Autenticação de usuários (futuro)
-
----
-
-Desenvolvido por **Ismael Ribeiro**
+    > Desenvolvido por ***Ismael Ribeiro.***
