@@ -131,6 +131,7 @@ def nova_inscricao():
         atleta2 = Atleta.query.get(atleta2_id)
         categoria = Categoria.query.get(categoria_id)
 
+        #
         if not atleta1 or not atleta2 or not categoria:
             flash("Dados inválidos.", "error")
             return redirect(url_for("nova_inscricao"))
@@ -157,18 +158,44 @@ def nova_inscricao():
 
         if modalidade == "masculino":
             if sexo1 != "masculino" or sexo2 != "masculino":
-                flash("This category is male only.", "error")
+                flash("Essa categoria aceita apenas atletas do sexo masculino.", "error")
                 return redirect(url_for("nova_inscricao"))
 
         elif modalidade == "feminino":
             if sexo1 != "feminino" or sexo2 != "feminino":
-                flash("This category is female only.", "error")
+                flash("Essa categoria aceita apenas atletas do sexo feminino.", "error")
                 return redirect(url_for("nova_inscricao"))
 
         elif modalidade == "misto":
             if sexo1 == sexo2:
-                flash("Mixed category requires one male and one female athlete.", "error")
+                flash("Categoria mista requer um atleta do sexo masculino e um atleta do sexo feminino.", "error")
                 return redirect(url_for("nova_inscricao"))
+
+
+        # Impedir dupla duplicada na mesma categoria:
+        #Crio inscricoes_categoria (uma lista que recebe todas as inscrições filtradas pelo id da categoria)
+        inscricoes_categoria = Inscricao.query.filter_by(categoria_id=categoria_id).all()
+
+        #percorre a lista de inscrições
+        for inscricao in inscricoes_categoria:
+            atletas_existentes = {inscricao.atleta1_id, inscricao.atleta2_id} #crio um set {} pois ordem nao importa
+            novos_atletas = {int(atleta1_id), int(atleta2_id)} #converto para int, pois os valores que vem de form, vem como str...
+
+            if atletas_existentes == novos_atletas:
+                flash("Essa dupla já está inscrita nesta categoria.", "error")
+                return redirect(url_for("nova_inscricao"))
+
+
+        # Impedir atleta jogar duas vezes na mesma categoria
+        for inscricao in inscricoes_categoria:
+            if (
+                int(atleta1_id) in [inscricao.atleta1_id, inscricao.atleta2_id] or
+                int(atleta2_id) in [inscricao.atleta1_id, inscricao.atleta2_id]
+            ):
+                flash("Um dos atletas já está inscrito para competir nesta categoria.", "error")
+                return redirect(url_for("nova_inscricao"))
+
+
 
         nova = Inscricao(
             atleta1_id=atleta1_id,
