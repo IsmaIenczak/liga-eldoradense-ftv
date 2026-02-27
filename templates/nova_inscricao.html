@@ -8,13 +8,38 @@
   {% endif %}
 {% endwith %}
 
-
 <h2>Nova Inscrição</h2>
+
+{% if eventos|length == 0 %}
+  <p style="color:red;">Cadastre um evento antes de criar inscrições.</p>
+{% endif %}
 
 <form method="POST">
 
+    <label>Evento:</label>
+    <select name="evento" id="eventoSelect" required {% if eventos|length == 0 %}disabled{% endif %}>
+        {% for evento in eventos %}
+            <option value="{{ evento.id }}" {% if selected_evento_id == evento.id %}selected{% endif %}>
+              {{ evento.nome }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label>Categoria (do evento):</label>
+    <select name="categoria" id="categoriaSelect" required {% if eventos|length == 0 %}disabled{% endif %}>
+        {% for categoria in categorias %}
+            <option value="{{ categoria.id }}">
+            {{ categoria.evento.nome }} - {{ categoria.nome }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
     <label>Atleta 1:</label>
-    <select name="atleta1" required>
+    <select name="atleta1" required {% if eventos|length == 0 %}disabled{% endif %}>
         {% for atleta in atletas %}
             <option value="{{ atleta.id }}">{{ atleta.nome }}</option>
         {% endfor %}
@@ -23,7 +48,7 @@
     <br><br>
 
     <label>Atleta 2:</label>
-    <select name="atleta2" required>
+    <select name="atleta2" required {% if eventos|length == 0 %}disabled{% endif %}>
         {% for atleta in atletas %}
             <option value="{{ atleta.id }}">{{ atleta.nome }}</option>
         {% endfor %}
@@ -31,17 +56,41 @@
 
     <br><br>
 
-    <label>Categoria:</label>
-    <select name="categoria" required>
-        {% for categoria in categorias %}
-            <option value="{{ categoria.id }}">
-                {{ categoria.nome }} - {{ categoria.nivel }} - {{ categoria.sexo }}
-            </option>
-        {% endfor %}
-    </select>
-
-    <br><br>
-
-    <button type="submit">Inscrever Dupla</button>
+    <button type="submit" {% if eventos|length == 0 %}disabled{% endif %}>Inscrever Dupla</button>
 
 </form>
+
+<script>
+  const eventoSelect = document.getElementById("eventoSelect");
+  const categoriaSelect = document.getElementById("categoriaSelect");
+
+  async function carregarCategorias(eventoId) {
+    categoriaSelect.innerHTML = "";
+    const resp = await fetch(`/api/eventos/${eventoId}/categorias`);
+    const data = await resp.json();
+
+    if (!data.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Nenhuma categoria cadastrada para este evento";
+      categoriaSelect.appendChild(opt);
+      categoriaSelect.disabled = true;
+      return;
+    }
+
+    categoriaSelect.disabled = false;
+
+    data.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `${c.nome} - ${c.nivel} - ${c.modalidade}`;
+      categoriaSelect.appendChild(opt);
+    });
+  }
+
+  if (eventoSelect) {
+    eventoSelect.addEventListener("change", (e) => {
+      carregarCategorias(e.target.value);
+    });
+  }
+</script>

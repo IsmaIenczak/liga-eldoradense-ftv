@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -95,21 +95,35 @@ def nova_categoria():
     eventos = Evento.query.all()
 
     if request.method == "POST":
-        nome = request.form.get("nome")
         modalidade = request.form.get("modalidade")
         nivel = request.form.get("nivel")
         evento_id = request.form.get("evento")
+
+        # Nome gerado automaticamente
+        nome = f"{modalidade} {nivel}"
+
+        # Impedir categoria duplicada no mesmo evento (mesma modalidade + nível)
+        existente = Categoria.query.filter_by(
+            evento_id=int(evento_id),
+            modalidade=modalidade,
+            nivel=nivel
+        ).first()
+
+        if existente:
+            flash("Essa categoria já existe neste evento.", "error")
+            return redirect(url_for("nova_categoria"))
 
         nova = Categoria(
             nome=nome,
             modalidade=modalidade,
             nivel=nivel,
-            evento_id=evento_id
+            evento_id=int(evento_id)
         )
 
         db.session.add(nova)
         db.session.commit()
 
+        flash("Categoria criada com sucesso!", "success")
         return redirect(url_for("listar_eventos"))
 
     return render_template("nova_categoria.html", eventos=eventos)
@@ -117,12 +131,45 @@ def nova_categoria():
 
 
 
+
+@app.route("/api/eventos/<int:evento_id>/categorias")
+def api_categorias_por_evento(evento_id):
+    categorias = Categoria.query.filter_by(evento_id=evento_id).all()
+    return jsonify([
+        {
+            "id": c.id,
+            "nome": c.nome,
+            "nivel": c.nivel,
+            "modalidade": c.modalidade
+        }
+        for c in categorias
+    ])
+
+
+
+
+
+
+
 @app.route("/inscricoes/nova", methods=["GET", "POST"])
 def nova_inscricao():
     atletas = Atleta.query.all()
-    categorias = Categoria.query.all()
+    eventos = Evento.query.all()
+
+    # Se não houver eventos cadastrados, não faz sentido permitir inscrição
+    if not eventos:
+        flash("Cadastre um evento antes de criar inscrições.", "error")
+        return render_template("nova_inscricao.html", atletas=atletas, eventos=[], categorias=[], selected_evento_id=None)
+
+    # Evento selecionado (GET: via querystring, POST: via form)
+    selected_evento_id = request.args.get("evento")
+    if selected_evento_id is None:
+        selected_evento_id = str(eventos[0].id)  # default: primeiro evento
+
+    categorias = Categoria.query.filter_by(evento_id=int(selected_evento_id)).all()
 
     if request.method == "POST":
+        evento_id = request.form.get("evento")
         atleta1_id = request.form.get("atleta1")
         atleta2_id = request.form.get("atleta2")
         categoria_id = request.form.get("categoria")
@@ -131,60 +178,60 @@ def nova_inscricao():
         atleta2 = Atleta.query.get(atleta2_id)
         categoria = Categoria.query.get(categoria_id)
 
-        #
-        if not atleta1 or not atleta2 or not categoria:
+        if not atleta1 or not atleta2 or not categoria or not evento_id:
             flash("Dados inválidos.", "error")
             return redirect(url_for("nova_inscricao"))
+
+        # Garante consistência: categoria precisa pertencer ao evento selecionado
+        if categoria.evento_id != int(evento_id):
+            flash("A categoria selecionada não pertence ao evento escolhido.", "error")
+            return redirect(url_for("nova_inscricao", evento=evento_id))
 
         # Não pode ser a mesma pessoa
         if atleta1_id == atleta2_id:
             flash("Selecione atletas diferentes", "error")
-            return redirect(url_for("nova_inscricao"))
+            return redirect(url_for("nova_inscricao", evento=evento_id))
 
         # Níveis precisam ser iguais
         if atleta1.nivel.strip().lower() != atleta2.nivel.strip().lower():
             flash("Os atletas devem estar no mesmo nível", "error")
-            return redirect(url_for("nova_inscricao"))
+            return redirect(url_for("nova_inscricao", evento=evento_id))
 
         # Categoria precisa bater com o nível
         if categoria.nivel.strip().lower() != atleta1.nivel.strip().lower():
             flash("A categoria selecionada deve estar de acordo com nível do atleta", "error")
-            return redirect(url_for("nova_inscricao"))
+            return redirect(url_for("nova_inscricao", evento=evento_id))
 
-        # Sexo precisa bater com a categoria
-        modalidade = categoria.modalidade.lower()
-        sexo1 = atleta1.sexo.lower()
-        sexo2 = atleta2.sexo.lower()
+        # Sexo precisa bater com a categoria (modalidade)
+        modalidade = (categoria.modalidade or "").strip().lower()
+        sexo1 = atleta1.sexo.strip().lower()
+        sexo2 = atleta2.sexo.strip().lower()
 
         if modalidade == "masculino":
             if sexo1 != "masculino" or sexo2 != "masculino":
                 flash("Essa categoria aceita apenas atletas do sexo masculino.", "error")
-                return redirect(url_for("nova_inscricao"))
+                return redirect(url_for("nova_inscricao", evento=evento_id))
 
         elif modalidade == "feminino":
             if sexo1 != "feminino" or sexo2 != "feminino":
                 flash("Essa categoria aceita apenas atletas do sexo feminino.", "error")
-                return redirect(url_for("nova_inscricao"))
+                return redirect(url_for("nova_inscricao", evento=evento_id))
 
         elif modalidade == "misto":
             if sexo1 == sexo2:
                 flash("Categoria mista requer um atleta do sexo masculino e um atleta do sexo feminino.", "error")
-                return redirect(url_for("nova_inscricao"))
+                return redirect(url_for("nova_inscricao", evento=evento_id))
 
-
-        # Impedir dupla duplicada na mesma categoria:
-        #Crio inscricoes_categoria (uma lista que recebe todas as inscrições filtradas pelo id da categoria)
+        # Filtra inscrições só daquela categoria
         inscricoes_categoria = Inscricao.query.filter_by(categoria_id=categoria_id).all()
 
-        #percorre a lista de inscrições
+        # Impedir dupla duplicada na mesma categoria
         for inscricao in inscricoes_categoria:
-            atletas_existentes = {inscricao.atleta1_id, inscricao.atleta2_id} #crio um set {} pois ordem nao importa
-            novos_atletas = {int(atleta1_id), int(atleta2_id)} #converto para int, pois os valores que vem de form, vem como str...
-
+            atletas_existentes = {inscricao.atleta1_id, inscricao.atleta2_id}
+            novos_atletas = {int(atleta1_id), int(atleta2_id)}
             if atletas_existentes == novos_atletas:
                 flash("Essa dupla já está inscrita nesta categoria.", "error")
-                return redirect(url_for("nova_inscricao"))
-
+                return redirect(url_for("nova_inscricao", evento=evento_id))
 
         # Impedir atleta jogar duas vezes na mesma categoria
         for inscricao in inscricoes_categoria:
@@ -193,9 +240,7 @@ def nova_inscricao():
                 int(atleta2_id) in [inscricao.atleta1_id, inscricao.atleta2_id]
             ):
                 flash("Um dos atletas já está inscrito para competir nesta categoria.", "error")
-                return redirect(url_for("nova_inscricao"))
-
-
+                return redirect(url_for("nova_inscricao", evento=evento_id))
 
         nova = Inscricao(
             atleta1_id=atleta1_id,
@@ -207,10 +252,16 @@ def nova_inscricao():
         db.session.commit()
 
         flash("Inscrição realizada com sucesso!", "success")
-        return redirect(url_for("nova_inscricao"))
+        return redirect(url_for("nova_inscricao", evento=evento_id))
 
-    # GET request
-    return render_template("nova_inscricao.html", atletas=atletas, categorias=categorias)
+    return render_template(
+        "nova_inscricao.html",
+        atletas=atletas,
+        eventos=eventos,
+        categorias=categorias,
+        selected_evento_id=int(selected_evento_id)
+    )
+
 
 
 
