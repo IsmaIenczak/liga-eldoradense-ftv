@@ -99,9 +99,6 @@ def nova_categoria():
         nivel = request.form.get("nivel")
         evento_id = request.form.get("evento")
 
-        # Nome gerado automaticamente
-        nome = f"{modalidade} {nivel}"
-
         # Impedir categoria duplicada no mesmo evento (mesma modalidade + nível)
         existente = Categoria.query.filter_by(
             evento_id=int(evento_id),
@@ -114,11 +111,10 @@ def nova_categoria():
             return redirect(url_for("nova_categoria"))
 
         nova = Categoria(
-            nome=nome,
-            modalidade=modalidade,
-            nivel=nivel,
-            evento_id=int(evento_id)
-        )
+        modalidade=modalidade,
+        nivel=nivel,
+        evento_id=int(evento_id))
+
 
         db.session.add(nova)
         db.session.commit()
@@ -284,12 +280,17 @@ class Evento(db.Model):
 
 class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    modalidade = db.Column(db.String(20))  
+    modalidade = db.Column(db.String(20), nullable=False)
     nivel = db.Column(db.String(20), nullable=False)
-    # Cria uma coluna na tabela categoria que só pode armazenar, valores que já existam na coluna id da tabela evento, garantindo a integridade referencial no banco de dados.
+
     evento_id = db.Column(db.Integer, db.ForeignKey("evento.id"), nullable=False)
     evento = db.relationship("Evento", backref="categorias")
+
+    # Nome calculado dinamicamente
+    @property
+    def nome(self):
+        return f"{self.modalidade} {self.nivel}"
+
     def __repr__(self):
         return f"<Categoria {self.nome}>"
 
