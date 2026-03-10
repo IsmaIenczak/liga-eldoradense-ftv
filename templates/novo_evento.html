@@ -1,7 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h2>Novo Evento</h2>
 
 <form method="POST">
-
     <label>Nome do Evento:</label>
     <input type="text" name="nome" required><br><br>
 
@@ -20,10 +22,9 @@
     <label>Número:</label>
     <input type="text" name="numero" inputmode="numeric" required><br><br>
 
-
     <label>CEP:</label>
     <input type="text" name="cep" maxlength="8" required><br><br>
 
     <button type="submit">Cadastrar Evento</button>
-
 </form>
+{% endblock %}
