@@ -24,6 +24,7 @@
                 <th>Ações</th>
             </tr>
         </thead>
+
         <tbody>
             {% for atleta in atletas %}
                 <tr>
@@ -31,18 +32,40 @@
                     <td>{{ atleta.cpf }}</td>
                     <td>{{ atleta.sexo }}</td>
                     <td>{{ atleta.nivel }}</td>
+
                     <td>
-                        <form action="{{ url_for('atletas.excluir_atleta', atleta_id=atleta.id) }}" method="POST" style="display:inline;">
-                            <button type="submit" onclick="return confirm('Tem certeza que deseja excluir este atleta?')">
+                        <!-- ✏️ Botão Editar -->
+                        <a href="{{ url_for('atletas.editar_atleta', atleta_id=atleta.id) }}"
+                        style="
+                            display:inline-block;
+                            padding:4px 8px;
+                            border:1px solid #999;
+                            background-color:#eee;
+                            text-decoration:none;
+                            color:black;
+                            margin-right:4px;
+                        ">
+                            Editar
+                        </a>
+
+                        <!-- 🗑️ Botão Excluir -->
+                        <form action="{{ url_for('atletas.excluir_atleta', atleta_id=atleta.id) }}"
+                            method="POST"
+                            style="display:inline;">
+                            <button type="submit"
+                                    onclick="return confirm('Tem certeza que deseja excluir este atleta?')">
                                 Excluir
                             </button>
                         </form>
                     </td>
+
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
 {% else %}
     <p>Nenhum atleta cadastrado.</p>
 {% endif %}
+
 {% endblock %}
