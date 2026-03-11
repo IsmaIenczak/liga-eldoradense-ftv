@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from extensions import db
 from models import Evento
 
@@ -41,3 +41,57 @@ def cadastrar_evento():
         return redirect(url_for("eventos.listar_eventos"))
 
     return render_template("novo_evento.html")
+
+
+
+
+
+
+@eventos_bp.route("/eventos/editar/<int:evento_id>", methods=["GET", "POST"])
+def editar_evento(evento_id):
+    evento = Evento.query.get_or_404(evento_id)
+
+    if request.method == "POST":
+        nome = request.form.get("nome")
+        data_str = request.form.get("data")
+        arena = request.form.get("arena")
+        rua = request.form.get("rua")
+        cidade = request.form.get("cidade")
+        cep = request.form.get("cep")
+        numero = request.form.get("numero")
+
+        data = datetime.strptime(data_str, "%Y-%m-%d").date()
+
+        evento.nome = nome
+        evento.data = data
+        evento.arena = arena
+        evento.rua = rua
+        evento.cidade = cidade
+        evento.cep = cep
+        evento.numero = numero
+
+        db.session.commit()
+
+        return redirect(url_for("eventos.listar_eventos"))
+
+    return render_template("editar_evento.html", evento=evento)
+
+
+
+
+@eventos_bp.route("/eventos/excluir/<int:evento_id>", methods=["POST"])
+def excluir_evento(evento_id):
+    evento = Evento.query.get_or_404(evento_id)
+
+    if evento.categorias:
+        flash(
+            "Este evento não pode ser excluído porque possui categorias vinculadas.",
+            "error"
+        )
+        return redirect(url_for("eventos.listar_eventos"))
+
+    db.session.delete(evento)
+    db.session.commit()
+
+    flash("Evento excluído com sucesso!", "success")
+    return redirect(url_for("eventos.listar_eventos"))

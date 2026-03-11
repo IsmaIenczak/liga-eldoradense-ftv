@@ -37,3 +37,123 @@ def nova_categoria():
         return redirect(url_for("eventos.listar_eventos"))
 
     return render_template("nova_categoria.html", eventos=eventos)
+
+
+@categorias_bp.route("/categorias")
+def listar_categorias():
+    categorias = Categoria.query.all()
+    return render_template("categorias.html", categorias=categorias)
+
+
+
+
+@categorias_bp.route("/categorias/excluir/<int:categoria_id>", methods=["POST"])
+def excluir_categoria(categoria_id):
+    categoria = Categoria.query.get_or_404(categoria_id)
+
+    if categoria.inscricoes:
+        flash(
+            "Esta categoria não pode ser excluída porque possui inscrições vinculadas.",
+            "error"
+        )
+        return redirect(url_for("categorias.listar_categorias"))
+
+    db.session.delete(categoria)
+    db.session.commit()
+
+    flash("Categoria excluída com sucesso!", "success")
+    return redirect(url_for("categorias.listar_categorias"))
+
+
+
+
+
+
+@categorias_bp.route("/categorias/editar/<int:categoria_id>", methods=["GET", "POST"])
+def editar_categoria(categoria_id):
+    categoria = Categoria.query.get_or_404(categoria_id)
+    eventos = Evento.query.all()
+
+    if request.method == "POST":
+        nova_modalidade = request.form.get("modalidade")
+        novo_nivel = request.form.get("nivel")
+        novo_evento_id = int(request.form.get("evento"))
+
+        categoria_tem_inscricoes = len(categoria.inscricoes) > 0
+
+        if categoria_tem_inscricoes:
+            # Não permitir trocar o evento se já houver inscrições
+            if novo_evento_id != categoria.evento_id:
+                flash(
+                    "Não é possível alterar o evento de uma categoria que já possui inscrições.",
+                    "error"
+                )
+                return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+            # Validar todas as inscrições existentes contra o novo nível/modalidade
+            for inscricao in categoria.inscricoes:
+                atleta1 = inscricao.atleta1
+                atleta2 = inscricao.atleta2
+
+                sexo1 = atleta1.sexo.strip().lower()
+                sexo2 = atleta2.sexo.strip().lower()
+                nivel1 = atleta1.nivel.strip().lower()
+                nivel2 = atleta2.nivel.strip().lower()
+
+                nova_modalidade_normalizada = nova_modalidade.strip().lower()
+                novo_nivel_normalizado = novo_nivel.strip().lower()
+
+                # Os atletas precisam continuar compatíveis com o novo nível
+                if nivel1 != novo_nivel_normalizado or nivel2 != novo_nivel_normalizado:
+                    flash(
+                        f"Não é possível alterar esta categoria: a inscrição da dupla {atleta1.nome} e {atleta2.nome} ficaria com nível incompatível.",
+                        "error"
+                    )
+                    return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+                # Validar nova modalidade
+                if nova_modalidade_normalizada == "masculino":
+                    if sexo1 != "masculino" or sexo2 != "masculino":
+                        flash(
+                            f"Não é possível alterar esta categoria: a dupla {atleta1.nome} e {atleta2.nome} não se encaixa em categoria masculina.",
+                            "error"
+                        )
+                        return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+                elif nova_modalidade_normalizada == "feminino":
+                    if sexo1 != "feminino" or sexo2 != "feminino":
+                        flash(
+                            f"Não é possível alterar esta categoria: a dupla {atleta1.nome} e {atleta2.nome} não se encaixa em categoria feminina.",
+                            "error"
+                        )
+                        return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+                elif nova_modalidade_normalizada == "misto":
+                    if sexo1 == sexo2:
+                        flash(
+                            f"Não é possível alterar esta categoria: a dupla {atleta1.nome} e {atleta2.nome} deixaria de se encaixar em categoria mista.",
+                            "error"
+                        )
+                        return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        # Impedir categoria duplicada no mesmo evento
+        categoria_existente = Categoria.query.filter_by(
+            evento_id=novo_evento_id,
+            modalidade=nova_modalidade,
+            nivel=novo_nivel
+        ).first()
+
+        if categoria_existente and categoria_existente.id != categoria.id:
+            flash("Já existe uma categoria com essa modalidade e nível neste evento.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        categoria.modalidade = nova_modalidade
+        categoria.nivel = novo_nivel
+        categoria.evento_id = novo_evento_id
+
+        db.session.commit()
+
+        flash("Categoria atualizada com sucesso!", "success")
+        return redirect(url_for("categorias.listar_categorias"))
+
+    return render_template("editar_categoria.html", categoria=categoria, eventos=eventos)

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Editar Evento</h2>
+
+<form method="POST">
+
+    <label>Nome do Evento:</label>
+    <input type="text" name="nome" value="{{ evento.nome }}" required>
+    <br><br>
+
+    <label>Data:</label>
+    <input type="date" name="data" value="{{ evento.data }}" required>
+    <br><br>
+
+    <label>Nome da Arena:</label>
+    <input type="text" name="arena" value="{{ evento.arena }}" required>
+    <br><br>
+
+    <label>Rua:</label>
+    <input type="text" name="rua" value="{{ evento.rua }}" required>
+    <br><br>
+
+    <label>Cidade:</label>
+    <input type="text" name="cidade" value="{{ evento.cidade }}" required>
+    <br><br>
+
+    <label>Número:</label>
+    <input type="text" name="numero" value="{{ evento.numero }}" inputmode="numeric" required>
+    <br><br>
+
+    <label>CEP:</label>
+    <input type="text" name="cep" value="{{ evento.cep }}" maxlength="8" required>
+    <br><br>
+
+    <button type="submit">Salvar Alterações</button>
+
+</form>
+{% endblock %}

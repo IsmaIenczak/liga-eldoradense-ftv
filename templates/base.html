@@ -4,21 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Liga Eldoradense{% endblock %}</title>
+
+    <style>
+        nav a {
+            margin-right: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            color: black;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
 </head>
 
 <body>
 
     <header>
         <h1>Liga Eldoradense de Futevôlei</h1>
+
+        <!-- 🧭 MENU PRINCIPAL -->
+        <nav>
+            <a href="/">Início</a> |
+            <a href="/atletas">Atletas</a> |
+            <a href="/eventos">Eventos</a> |
+            <a href="/eventos/novo">Novo evento</a> |
+            <a href="/categorias">Categorias</a> |
+            <a href="/categorias/nova">Nova Categoria</a> |
+            <a href="/inscricoes">Inscrições</a> |
+            <a href="/inscricoes/nova">Nova Inscrição</a>
+        </nav>
+
         <hr>
     </header>
 
-    
     <main>
         {% block content %}
         {% endblock %}
     </main>
-
 
 </body>
 </html>

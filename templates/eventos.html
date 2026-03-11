@@ -1,13 +1,78 @@
-<h2>Eventos Cadastrados</h2>
+{% extends "base.html" %}
 
-<ul>
-    {% for evento in eventos %}
-        <li>
-            <strong>{{ evento.nome }}</strong><br>
-            Data: {{ evento.data }}<br>
-            Local: {{ evento.arena }}<br>
-            Endereço: {{ evento.rua }} - nº {{ evento.numero }} - {{ evento.cidade }} - CEP: {{ evento.cep }} 
-            <br><br>
-        </li>
+{% block content %}
+<h2>Eventos</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color: {% if category == 'error' %}red{% else %}green{% endif %};">
+        {{ message }}
+      </p>
     {% endfor %}
-</ul>
+  {% endif %}
+{% endwith %}
+
+{% if eventos %}
+<table border="1" cellpadding="8">
+
+    <!-- 🔹 CABEÇALHO -->
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Data</th>
+            <th>Arena</th>
+            <th>Cidade</th>
+            <th>Ações</th>  
+        </tr>
+    </thead>
+
+    <!-- 🔹 DADOS -->
+    <tbody>
+        {% for evento in eventos %}
+        <tr>
+            <td>{{ evento.nome }}</td>
+            <td>{{ evento.data }}</td>
+            <td>{{ evento.arena }}</td>
+            <td>{{ evento.cidade }}</td>
+
+            
+            <td>
+
+                <!-- ✏️ Editar -->
+                <a href="{{ url_for('eventos.editar_evento', evento_id=evento.id) }}"
+                   style="
+                       display:inline-block;
+                       padding:4px 8px;
+                       border:1px solid #999;
+                       background-color:#eee;
+                       text-decoration:none;
+                       color:black;
+                       margin-right:4px;
+                   ">
+                    Editar
+                </a>
+
+                <!-- 🗑️ Excluir -->
+                <form action="{{ url_for('eventos.excluir_evento', evento_id=evento.id) }}"
+                      method="POST"
+                      style="display:inline;">
+                    <button type="submit"
+                            onclick="return confirm('Tem certeza que deseja excluir este evento?')">
+                        Excluir
+                    </button>
+                </form>
+
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+
+{% else %}
+<p>Nenhum evento cadastrado.</p>
+{% endif %}
+
+{% endblock %}
