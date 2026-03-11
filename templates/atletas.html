@@ -1,19 +1,48 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h2>Atletas</h2>
 
-<h2>Lista de Atletas</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color: {% if category == 'error' %}red{% else %}green{% endif %};">
+        {{ message }}
+      </p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
 {% if atletas %}
-    <ul>
-        {% for atleta in atletas %}
-            <li>
-                {{ atleta.nome }} - {{ atleta.sexo }} - {{ atleta.nivel }}
-            </li>
-        {% endfor %}
-    </ul>
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Sexo</th>
+                <th>Nível</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atleta in atletas %}
+                <tr>
+                    <td>{{ atleta.nome }}</td>
+                    <td>{{ atleta.cpf }}</td>
+                    <td>{{ atleta.sexo }}</td>
+                    <td>{{ atleta.nivel }}</td>
+                    <td>
+                        <form action="{{ url_for('atletas.excluir_atleta', atleta_id=atleta.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" onclick="return confirm('Tem certeza que deseja excluir este atleta?')">
+                                Excluir
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% else %}
     <p>Nenhum atleta cadastrado.</p>
 {% endif %}
-
-{% endblock %}  
+{% endblock %}

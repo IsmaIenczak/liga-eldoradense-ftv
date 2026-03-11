@@ -125,3 +125,23 @@ def nova_inscricao():
         categorias=categorias,
         selected_evento_id=int(selected_evento_id)
     )
+
+
+#Rota de listagem de inscrições
+@inscricoes_bp.route("/inscricoes")
+def listar_inscricoes():
+    inscricoes = Inscricao.query.all()
+    return render_template("inscricoes.html", inscricoes=inscricoes)
+
+
+
+#Rota dinâmica para exclusão de inscrição
+@inscricoes_bp.route("/inscricoes/excluir/<int:inscricao_id>", methods=["POST"])
+def excluir_inscricao(inscricao_id):
+    inscricao = Inscricao.query.get_or_404(inscricao_id)
+
+    db.session.delete(inscricao)
+    db.session.commit()
+
+    flash("Inscrição excluída com sucesso!", "success")
+    return redirect(url_for("inscricoes.listar_inscricoes"))

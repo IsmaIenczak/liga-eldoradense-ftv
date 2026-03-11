@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Inscrições</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color: {% if category == 'error' %}red{% else %}green{% endif %};">
+        {{ message }}
+      </p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% if inscricoes %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Evento</th>
+                <th>Categoria</th>
+                <th>Atleta 1</th>
+                <th>Atleta 2</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inscricao in inscricoes %}
+                <tr>
+                    <td>{{ inscricao.categoria.evento.nome }}</td>
+                    <td>{{ inscricao.categoria.nome }}</td>
+                    <td>{{ inscricao.atleta1.nome }}</td>
+                    <td>{{ inscricao.atleta2.nome }}</td>
+                    <td>
+                        <form action="{{ url_for('inscricoes.excluir_inscricao', inscricao_id=inscricao.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta inscrição?')">
+                                Excluir
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nenhuma inscrição cadastrada até o momento.</p>
+{% endif %}
+{% endblock %}
