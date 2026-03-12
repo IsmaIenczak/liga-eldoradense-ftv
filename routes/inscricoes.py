@@ -5,18 +5,27 @@ from models import Atleta, Evento, Categoria, Inscricao
 inscricoes_bp = Blueprint("inscricoes", __name__)
 
 
+
+
 @inscricoes_bp.route("/api/eventos/<int:evento_id>/categorias")
 def api_categorias_por_evento(evento_id):
     categorias = Categoria.query.filter_by(evento_id=evento_id).all()
+
     return jsonify([
         {
             "id": c.id,
             "nome": c.nome,
             "nivel": c.nivel,
-            "modalidade": c.modalidade
+            "modalidade": c.modalidade,
+            "vagas": c.vagas,
+            "inscritos": len(c.inscricoes),
+            "vagas_restantes": c.vagas - len(c.inscricoes),
+            "lotada": len(c.inscricoes) >= c.vagas
         }
         for c in categorias
     ])
+
+
 
 
 @inscricoes_bp.route("/inscricoes/nova", methods=["GET", "POST"])

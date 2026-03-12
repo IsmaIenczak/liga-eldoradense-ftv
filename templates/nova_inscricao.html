@@ -33,9 +33,18 @@
 
     <label>Categoria (do evento):</label>
     <select name="categoria" id="categoriaSelect" required {% if eventos|length == 0 %}disabled{% endif %}>
+        {% set categorias_disponiveis = false %}
         {% for categoria in categorias %}
-            <option value="{{ categoria.id }}">
-            {{ categoria.evento.nome }} - {{ categoria.nome }}
+            {% set inscritos = categoria.inscricoes|length %}
+            {% set vagas_restantes = categoria.vagas - inscritos %}
+
+            <option value="{{ categoria.id }}"
+                    {% if inscritos >= categoria.vagas %}disabled{% endif %}>
+                {% if inscritos >= categoria.vagas %}
+                    {{ categoria.nome }} — LOTADA
+                {% else %}
+                    {{ categoria.nome }} — {{ vagas_restantes }} vagas restantes
+                {% endif %}
             </option>
         {% endfor %}
     </select>
@@ -66,6 +75,7 @@
 
 </form>
 
+
 <script>
   const eventoSelect = document.getElementById("eventoSelect");
   const categoriaSelect = document.getElementById("categoriaSelect");
@@ -84,14 +94,28 @@
       return;
     }
 
-    categoriaSelect.disabled = false;
+    let existeCategoriaDisponivel = false;
 
     data.forEach(c => {
       const opt = document.createElement("option");
       opt.value = c.id;
-      opt.textContent = `${c.nome} - ${c.nivel} - ${c.modalidade}`;
+
+      if (c.lotada) {
+        opt.textContent = `${c.nome} — LOTADA`;
+        opt.disabled = true;
+      } else {
+        opt.textContent = `${c.nome} — ${c.vagas_restantes} vagas restantes`;
+        existeCategoriaDisponivel = true;
+      }
+
       categoriaSelect.appendChild(opt);
     });
+
+    if (!existeCategoriaDisponivel) {
+      categoriaSelect.disabled = true;
+    } else {
+      categoriaSelect.disabled = false;
+    }
   }
 
   if (eventoSelect) {

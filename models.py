@@ -12,6 +12,7 @@ class Atleta(db.Model):
         return f"<Atleta {self.nome}>"
 
 
+
 class Evento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -43,6 +44,7 @@ class Categoria(db.Model):
 
     def __repr__(self):
         return f"<Categoria {self.nome}>"
+
 
 
 
