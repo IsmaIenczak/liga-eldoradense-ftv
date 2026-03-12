@@ -21,39 +21,55 @@
                 <th>Modalidade</th>
                 <th>Nível</th>
                 <th>Nome da Categoria</th>
+                <th>Vagas</th>
+                <th>Inscritos</th>
+                <th>Vagas Restantes</th>
+                <th>Status</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for categoria in categorias %}
+                {% set inscritos = categoria.inscricoes|length %}
+                {% set vagas_restantes = categoria.vagas - inscritos %}
+
                 <tr>
                     <td>{{ categoria.evento.nome }}</td>
                     <td>{{ categoria.modalidade }}</td>
                     <td>{{ categoria.nivel }}</td>
                     <td>{{ categoria.nome }}</td>
-                    
+                    <td>{{ categoria.vagas }}</td>
+                    <td>{{ inscritos }} / {{ categoria.vagas }}</td>
+                    <td>{{ vagas_restantes }}</td>
                     <td>
-                    <a href="{{ url_for('categorias.editar_categoria', categoria_id=categoria.id) }}"
-                    style="
-                        display:inline-block;
-                        padding:4px 8px;
-                        border:1px solid #999;
-                        background-color:#eee;
-                        text-decoration:none;
-                        color:black;
-                        margin-right:4px;
-                    ">
-                        Editar
-                    </a>
+                        {% if inscritos >= categoria.vagas %}
+                            Lotada
+                        {% else %}
+                            Aberta
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('categorias.editar_categoria', categoria_id=categoria.id) }}"
+                           style="
+                               display:inline-block;
+                               padding:4px 8px;
+                               border:1px solid #999;
+                               background-color:#eee;
+                               text-decoration:none;
+                               color:black;
+                               margin-right:4px;
+                           ">
+                            Editar
+                        </a>
 
-                    <form action="{{ url_for('categorias.excluir_categoria', categoria_id=categoria.id) }}"
-                        method="POST"
-                        style="display:inline;">
-                        <button type="submit"
-                                onclick="return confirm('Tem certeza que deseja excluir esta categoria?')">
-                            Excluir
-                        </button>
-                    </form>
+                        <form action="{{ url_for('categorias.excluir_categoria', categoria_id=categoria.id) }}"
+                              method="POST"
+                              style="display:inline;">
+                            <button type="submit"
+                                    onclick="return confirm('Tem certeza que deseja excluir esta categoria?')">
+                                Excluir
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

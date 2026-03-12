@@ -4,8 +4,6 @@ from models import Atleta, Evento, Categoria, Inscricao
 
 inscricoes_bp = Blueprint("inscricoes", __name__)
 
-MAX_DUPLAS_POR_CATEGORIA = 8
-
 
 @inscricoes_bp.route("/api/eventos/<int:evento_id>/categorias")
 def api_categorias_por_evento(evento_id):
@@ -94,14 +92,12 @@ def nova_inscricao():
         inscricoes_categoria = Inscricao.query.filter_by(categoria_id=categoria_id).all()
 
 
-        # Impedir novas inscrições se a categoria já estiver lotada
-        if len(inscricoes_categoria) >= MAX_DUPLAS_POR_CATEGORIA:
+        if len(inscricoes_categoria) >= categoria.vagas:
             flash(
-                f"Esta categoria já atingiu o limite máximo de {MAX_DUPLAS_POR_CATEGORIA} duplas.",
+                f"Esta categoria já atingiu o limite máximo de {categoria.vagas} duplas.",
                 "error"
             )
             return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
-
 
         
         for inscricao in inscricoes_categoria:

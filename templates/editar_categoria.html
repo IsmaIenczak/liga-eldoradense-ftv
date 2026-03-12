@@ -17,31 +17,24 @@
 
     <label>Modalidade:</label>
     <select name="modalidade" required>
-        <option value="Masculino" {% if categoria.modalidade == "Masculino" %}selected{% endif %}>
-            Masculino
-        </option>
-        <option value="Feminino" {% if categoria.modalidade == "Feminino" %}selected{% endif %}>
-            Feminino
-        </option>
-        <option value="Misto" {% if categoria.modalidade == "Misto" %}selected{% endif %}>
-            Misto
-        </option>
+        <option value="Masculino" {% if categoria.modalidade == "Masculino" %}selected{% endif %}>Masculino</option>
+        <option value="Feminino" {% if categoria.modalidade == "Feminino" %}selected{% endif %}>Feminino</option>
+        <option value="Misto" {% if categoria.modalidade == "Misto" %}selected{% endif %}>Misto</option>
     </select>
 
     <br><br>
 
     <label>Nível:</label>
     <select name="nivel" required>
-        <option value="Iniciante" {% if categoria.nivel == "Iniciante" %}selected{% endif %}>
-            Iniciante
-        </option>
-        <option value="Intermediario" {% if categoria.nivel == "Intermediario" %}selected{% endif %}>
-            Intermediário
-        </option>
-        <option value="Avancado" {% if categoria.nivel == "Avancado" %}selected{% endif %}>
-            Avançado
-        </option>
+        <option value="Iniciante" {% if categoria.nivel == "Iniciante" %}selected{% endif %}>Iniciante</option>
+        <option value="Intermediario" {% if categoria.nivel == "Intermediario" %}selected{% endif %}>Intermediário</option>
+        <option value="Avancado" {% if categoria.nivel == "Avancado" %}selected{% endif %}>Avançado</option>
     </select>
+
+    <br><br>
+
+    <label>Número de vagas:</label>
+    <input type="number" name="vagas" value="{{ categoria.vagas }}" min="4" step="2" required>
 
     <br><br>
 

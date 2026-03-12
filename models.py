@@ -26,10 +26,13 @@ class Evento(db.Model):
         return f"<Evento {self.nome}>"
 
 
+
+
 class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     modalidade = db.Column(db.String(20), nullable=False)
     nivel = db.Column(db.String(20), nullable=False)
+    vagas = db.Column(db.Integer, nullable=False)
 
     evento_id = db.Column(db.Integer, db.ForeignKey("evento.id"), nullable=False)
     evento = db.relationship("Evento", backref="categorias")
@@ -40,6 +43,8 @@ class Categoria(db.Model):
 
     def __repr__(self):
         return f"<Categoria {self.nome}>"
+
+
 
 
 class Inscricao(db.Model):

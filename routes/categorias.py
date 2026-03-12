@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from extensions import db
 from models import Evento, Categoria
 
+
 categorias_bp = Blueprint("categorias", __name__)
 
 
@@ -13,6 +14,21 @@ def nova_categoria():
         modalidade = request.form.get("modalidade")
         nivel = request.form.get("nivel")
         evento_id = request.form.get("evento")
+        vagas = request.form.get("vagas")
+
+        if not vagas or not vagas.isdigit():
+            flash("O número de vagas deve ser um número inteiro válido.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
+
+        vagas = int(vagas)
+
+        if vagas < 4:
+            flash("O número de vagas deve ser no mínimo 4.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
+
+        if vagas % 2 != 0:
+            flash("O número de vagas deve ser par.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
 
         existente = Categoria.query.filter_by(
             evento_id=int(evento_id),
@@ -20,8 +36,6 @@ def nova_categoria():
             nivel=nivel
         ).first()
 
-
-        #CONCERTAR BUG > ESTE FLASH ESTÁ APARECENDO NO TEMPLATE DE CATEGORIAS CADASTRADAS, NAO NO DE NOVA CATEGORIA, COMO DEVERIA SER
         if existente:
             flash("Essa categoria já existe neste evento.", "error")
             return redirect(url_for("categorias.nova_categoria"))
@@ -29,6 +43,7 @@ def nova_categoria():
         nova = Categoria(
             modalidade=modalidade,
             nivel=nivel,
+            vagas=vagas,
             evento_id=int(evento_id)
         )
 
@@ -36,9 +51,11 @@ def nova_categoria():
         db.session.commit()
 
         flash("Categoria criada com sucesso!", "success")
-        return redirect(url_for("eventos.listar_eventos"))
+        return redirect(url_for("categorias.listar_categorias"))
 
     return render_template("nova_categoria.html", eventos=eventos)
+
+
 
 
 @categorias_bp.route("/categorias")
@@ -68,9 +85,6 @@ def excluir_categoria(categoria_id):
 
 
 
-
-
-
 @categorias_bp.route("/categorias/editar/<int:categoria_id>", methods=["GET", "POST"])
 def editar_categoria(categoria_id):
     categoria = Categoria.query.get_or_404(categoria_id)
@@ -80,11 +94,33 @@ def editar_categoria(categoria_id):
         nova_modalidade = request.form.get("modalidade")
         novo_nivel = request.form.get("nivel")
         novo_evento_id = int(request.form.get("evento"))
+        novas_vagas = request.form.get("vagas")
+
+        if not novas_vagas or not novas_vagas.isdigit():
+            flash("O número de vagas deve ser um número inteiro válido.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        novas_vagas = int(novas_vagas)
+
+        if novas_vagas < 4:
+            flash("O número de vagas deve ser no mínimo 4.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        if novas_vagas % 2 != 0:
+            flash("O número de vagas deve ser par.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        quantidade_inscritos = len(categoria.inscricoes)
+        if novas_vagas < quantidade_inscritos:
+            flash(
+                f"Não é possível definir {novas_vagas} vagas: a categoria já possui {quantidade_inscritos} inscrições.",
+                "error"
+            )
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
         categoria_tem_inscricoes = len(categoria.inscricoes) > 0
 
         if categoria_tem_inscricoes:
-            # Não permitir trocar o evento se já houver inscrições
             if novo_evento_id != categoria.evento_id:
                 flash(
                     "Não é possível alterar o evento de uma categoria que já possui inscrições.",
@@ -92,7 +128,6 @@ def editar_categoria(categoria_id):
                 )
                 return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
-            # Validar todas as inscrições existentes contra o novo nível/modalidade
             for inscricao in categoria.inscricoes:
                 atleta1 = inscricao.atleta1
                 atleta2 = inscricao.atleta2
@@ -105,7 +140,6 @@ def editar_categoria(categoria_id):
                 nova_modalidade_normalizada = nova_modalidade.strip().lower()
                 novo_nivel_normalizado = novo_nivel.strip().lower()
 
-                # Os atletas precisam continuar compatíveis com o novo nível
                 if nivel1 != novo_nivel_normalizado or nivel2 != novo_nivel_normalizado:
                     flash(
                         f"Não é possível alterar esta categoria: a inscrição da dupla {atleta1.nome} e {atleta2.nome} ficaria com nível incompatível.",
@@ -113,7 +147,6 @@ def editar_categoria(categoria_id):
                     )
                     return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
-                # Validar nova modalidade
                 if nova_modalidade_normalizada == "masculino":
                     if sexo1 != "masculino" or sexo2 != "masculino":
                         flash(
@@ -138,7 +171,6 @@ def editar_categoria(categoria_id):
                         )
                         return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
-        # Impedir categoria duplicada no mesmo evento
         categoria_existente = Categoria.query.filter_by(
             evento_id=novo_evento_id,
             modalidade=nova_modalidade,
@@ -151,6 +183,7 @@ def editar_categoria(categoria_id):
 
         categoria.modalidade = nova_modalidade
         categoria.nivel = novo_nivel
+        categoria.vagas = novas_vagas
         categoria.evento_id = novo_evento_id
 
         db.session.commit()
