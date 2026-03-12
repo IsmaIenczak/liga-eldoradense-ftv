@@ -20,6 +20,8 @@ def nova_categoria():
             nivel=nivel
         ).first()
 
+
+        #CONCERTAR BUG > ESTE FLASH ESTÁ APARECENDO NO TEMPLATE DE CATEGORIAS CADASTRADAS, NAO NO DE NOVA CATEGORIA, COMO DEVERIA SER
         if existente:
             flash("Essa categoria já existe neste evento.", "error")
             return redirect(url_for("categorias.nova_categoria"))
