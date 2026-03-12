@@ -1,160 +1,202 @@
-# 🏐 Liga Eldoradense de Futevôlei
+🏐 Liga Eldoradense de Futevôlei — Sistema Web (Flask)
 
-Sistema web desenvolvido em Flask para gerenciamento da Liga Eldoradense de Futevôlei.
+Aplicação web desenvolvida em Python + Flask + SQLAlchemy para gerenciamento completo de campeonatos de futevôlei, permitindo administrar atletas, eventos, categorias e inscrições de duplas com regras reais de competição.
 
-O objetivo do projeto é permitir o cadastro e organização de:
+O sistema foi projetado para evoluir futuramente para um modelo com usuários e inscrições self-service.
 
-- Atletas
-- Eventos (etapas)
-- Categorias por evento
-- Inscrições de duplas por categoria
+🚀 Funcionalidades:
+👤 Atletas
 
----
+- Cadastro de atletas
 
-## 🚀 Tecnologias utilizadas
+- Listagem de atletas
+
+- Edição de dados
+
+- Exclusão com validação de dependência
+
+- Validação de CPF (11 dígitos numéricos e único)
+
+- Proteção contra edição que invalide inscrições existentes
+
+🏟️ Eventos (Etapas):
+
+- Cadastro de eventos com data e local
+
+- Listagem de eventos
+
+- Edição de eventos
+
+- Exclusão com verificação de categorias vinculadas
+
+🏆 Categorias:
+
+- Cadastro de categorias por evento
+
+- Modalidade: Masculino / Feminino / Misto
+
+- Nível: Iniciante / Intermediário / Avançado
+
+- Definição de número de vagas por categoria
+
+  Validação de vagas:
+
+- obrigatório
+
+- número inteiro
+
+- par
+
+- mínimo de 4 duplas
+
+ Listagem com:
+
+- total de inscritos
+
+- vagas restantes
+
+- status (Aberta ou Lotada)
+
+- Edição com validação contra inscrições existentes
+
+- Exclusão bloqueada se houver inscrições
+
+🧩 Inscrições (Duplas):
+
+- Inscrição de duplas em categorias específicas
+
+- Seleção dinâmica de categorias por evento (via API interna)
+
+Regras de negócio implementadas:
+
+✔ atletas devem ser diferentes
+✔ atletas devem ter mesmo nível da categoria
+✔ compatibilidade com modalidade (masculino, feminino ou misto)
+✔ impedir dupla duplicada na mesma categoria
+✔ impedir atleta jogar duas vezes na mesma categoria
+✔ impedir inscrição quando categoria está lotada
+✔ validações completas no backend
+
+🧠 Regras de Integridade Implementadas:
+
+- O sistema protege automaticamente contra inconsistências, incluindo:
+
+- Edição de atleta não pode invalidar inscrições existentes
+
+- Edição de categoria não pode gerar incompatibilidade com duplas já inscritas
+
+- Não é possível reduzir vagas abaixo do número atual de inscritos
+
+- Eventos com categorias vinculadas não podem ser excluídos
+
+- Categorias com inscrições não podem ser excluídas
+
+🏗️ Arquitetura
+
+O projeto foi modularizado usando Blueprints do Flask, separando responsabilidades por domínio:
+
+routes/
+├── atletas.py
+├── eventos.py
+├── categorias.py
+└── inscricoes.py
+
+Outros componentes:
+
+- models.py — modelos SQLAlchemy
+
+- extensions.py — inicialização do banco
+
+- templates/ — páginas Jinja2
+
+- .env — variáveis de ambiente
+
+- SQLite como banco de dados
+
+⚙️ Tecnologias Utilizadas
 
 - Python 3
+
 - Flask
+
 - Flask-SQLAlchemy
+
 - SQLite
-- HTML (Jinja2 Templates)
+
+- Jinja2 Templates
+
+- HTML5 + CSS básico
+
 - python-dotenv
 
----
+- JavaScript (fetch API para requisições assíncronas)
 
-## 📌 Funcionalidades atuais
+🖥️ Instalação e Execução:
 
-### 👤 Atletas
-- Cadastro de atletas
-- Validação de CPF (11 dígitos numéricos)
-- Impede CPF duplicado
+1. Clonar o repositório:
+ git clone https://github.com/seu-usuario/liga-eldoradense-ftv.git
+  cd liga-eldoradense-ftv
 
-### 🏟 Eventos
-- Cadastro de eventos (etapas)
-- Informações de local e data
+2. Criar ambiente virtual:
+   python -m venv venv
 
-### 🏆 Categorias
-- Criadas por evento
-- Definidas por:
-  - Modalidade (Masculino, Feminino, Misto)
-  - Nível (Iniciante, Intermediário, Avançado)
-- Impede categoria duplicada no mesmo evento
-- Nome da categoria é gerado dinamicamente (Modalidade + Nível)
+Ativar:
 
-### 📝 Inscrições
-- Inscrição de dupla por categoria
-- Validações implementadas:
-  - Atletas devem ser diferentes
-  - Devem ter o mesmo nível
-  - Categoria deve corresponder ao nível da dupla
-  - Modalidade deve corresponder ao sexo dos atletas
-  - Impede dupla duplicada na mesma categoria
-  - Impede atleta inscrito duas vezes na mesma categoria
-  - Categoria deve pertencer ao evento selecionado
+  Windows:
+     Bash
+       venv\Scripts\activate
 
----
-
-## 🔄 Fluxo recomendado de uso
-
-1. Criar um evento
-2. Criar categorias vinculadas ao evento
-3. Cadastrar atletas
-4. Realizar inscrições
-
-### Atletas devem ser previamente cadastrados na rota global
-
----
-
-## ⚙️ Como rodar localmente
-
-1) - Clonar o repositório
-bash
-git clone https://github.com/IsmaIenczak/liga-eldoradense-ftv.git
-cd liga-eldoradense-ftv
-
---------------------------------------------------------------------------------
-
-2) Criar e ativar ambiente virtual:
-
-python -m venv venv
-
-Windows:
-venv\Scripts\activate
-
-Linux/Mac:
-source venv/bin/activate
-
---------------------------------------------------------------------------------
-
-3) Instalar dependências
-pip install -r requirements.txt
-
---------------------------------------------------------------------------------
+  Linux / macOS:
+    Bash:
+      source venv/bin/activate
 
 
-4) Criar arquivo .env
+3. Instalar dependências:
+   Bash
+     pip install flask flask-sqlalchemy python-dotenv
+  
+4. Configurar variáveis de ambiente:
+  Criar arquivo .env
+  No arquivo .env adicionar:
+    SECRET_KEY=sua_chave_secreta_aqui
 
-⚠️ O arquivo .env não deve ser versionado.
-
-Crie um arquivo chamado .env na raiz do projeto:
-
-SECRET_KEY=sua-chave-super-secreta-aqui
-
-Se não existir SECRET_KEY, o app usa um fallback de desenvolvimento (dev-key).
-Para produção, configure uma chave forte (e nunca versione o .env).
-
---------------------------------------------------------------------------------
-
-5) Executar
-python app.py
-
-Acesse:
-
-http://127.0.0.1:5000
-
-🗄️ Banco de dados
-
-Banco local em SQLite
-
-Arquivo: liga.db
-
-As tabelas são criadas automaticamente no start via db.create_all().
-
---------------------------------------------------------------------------------
-
-📁 Estrutura do projeto:
-
-liga-eldoradense-ftv/
-│
-├── app.py
-├── requirements.txt
-├── README.md
-├── .env (não versionado)
-│
-└── templates/
-    ├── base.html
-    ├── novo_atleta.html
-    ├── novo_evento.html
-    ├── nova_categoria.html
-    ├── nova_inscricao.html
-
---------------------------------------------------------------------------------
+5. Executar a aplicação:
+  Bash
+    python app.py
 
 
-🛣️ Próximos passos (ideias)
+O banco SQLite será criado automaticamente na primeira execução.
 
-- Modularização do sistema
 
-- CRUD completo (editar/excluir) para atletas, eventos, categorias e inscrições
+📊 Estrutura de Dados (Resumo):
 
-- Painel administrativo (proteção de rotas)
+Evento
+ └── Categoria (vagas configuráveis)
+       └── Inscrição (dupla de atletas)
 
-- Melhorias de UX no front (ex.: selects dependentes e listagens melhores)
+Atleta
+ └── participa de inscrições
 
-- Relatórios por evento/categoria (ex.: lista de inscritos por categoria)
+ 🔮 Melhorias Futuras:
 
-- Seed de dados para desenvolvimento
+Planejadas para evolução do sistema:
 
-    👤 Autor
+Sistema de autenticação (Admin / Usuário)
 
-    > Desenvolvido por ***Ismael Ribeiro.***
+Inscrições self-service pelos atletas
+
+Dashboard com estatísticas do campeonato
+
+Controle de status das categorias
+
+Geração automática de chaveamento
+
+Exportação de dados
+
+Interface responsiva
+
+👨‍💻 Autor
+
+Desenvolvido por *Ismael Lenczak*
+
+*Projeto criado para gestão da Liga Eldoradense de Futevôlei e portfólio - sistema real e robusto de gestão de campeonatos de futevôlei.*
