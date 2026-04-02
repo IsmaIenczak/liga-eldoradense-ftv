@@ -15,7 +15,7 @@ def api_categorias_por_evento(evento_id):
         {
             "id": c.id,
             "nome": c.nome,
-            "nivel": c.nivel,
+            "nivel": c.nivel.nome,
             "modalidade": c.modalidade,
             "vagas": c.vagas,
             "inscritos": len(c.inscricoes),
@@ -71,11 +71,11 @@ def nova_inscricao():
             flash("Selecione atletas diferentes", "error")
             return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
 
-        if atleta1.nivel.strip().lower() != atleta2.nivel.strip().lower():
+        if atleta1.nivel_id != atleta2.nivel_id:
             flash("Os atletas devem estar no mesmo nível", "error")
             return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
 
-        if categoria.nivel.strip().lower() != atleta1.nivel.strip().lower():
+        if categoria.nivel_id != atleta1.nivel_id:
             flash("A categoria selecionada deve estar de acordo com nível do atleta", "error")
             return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
 

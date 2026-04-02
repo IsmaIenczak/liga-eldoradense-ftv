@@ -36,15 +36,11 @@
 
     <label>Nível:</label>
     <select name="nivel" required>
-        <option value="iniciante" {% if atleta.nivel == "iniciante" %}selected{% endif %}>
-            Iniciante
+    {% for nivel in niveis %}
+        <option value="{{ nivel.id }}" {% if atleta.nivel_id == nivel.id %}selected{% endif %}>
+            {{ nivel.nome }}
         </option>
-        <option value="intermediario" {% if atleta.nivel == "intermediario" %}selected{% endif %}>
-            Intermediário
-        </option>
-        <option value="avancado" {% if atleta.nivel == "avancado" %}selected{% endif %}>
-            Avançado
-        </option>
+    {% endfor %}
     </select>
     <br><br>
 

@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from sqlalchemy import or_
-
 from extensions import db
 from models import Atleta, Inscricao
+from models import Atleta, Inscricao, Nivel
 
 atletas_bp = Blueprint("atletas", __name__)
 
@@ -15,30 +15,34 @@ def listar_atletas():
 
 @atletas_bp.route("/atletas/novo", methods=["GET", "POST"])
 def cadastrar_atleta():
+    niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
+
     if request.method == "POST":
         nome = request.form.get("nome")
         cpf = request.form.get("cpf")
-        sexo = request.form.get("sexo") 
-        nivel = request.form.get("nivel")
+        sexo = request.form.get("sexo")
+        nivel_id = request.form.get("nivel")
 
         if not cpf.isdigit() or len(cpf) != 11:
             return render_template(
                 "novo_atleta.html",
-                erro="CPF deve conter exatamente 11 números."
+                erro="CPF deve conter exatamente 11 números.",
+                niveis=niveis
             )
 
         cpf_existente = Atleta.query.filter_by(cpf=cpf).first()
         if cpf_existente:
             return render_template(
                 "novo_atleta.html",
-                erro="CPF já cadastrado no sistema."
+                erro="CPF já cadastrado no sistema.",
+                niveis=niveis
             )
 
         novo_atleta = Atleta(
             nome=nome,
             cpf=cpf,
             sexo=sexo,
-            nivel=nivel
+            nivel_id=int(nivel_id)
         )
 
         db.session.add(novo_atleta)
@@ -46,7 +50,7 @@ def cadastrar_atleta():
 
         return redirect(url_for("atletas.listar_atletas"))
 
-    return render_template("novo_atleta.html")
+    return render_template("novo_atleta.html", niveis=niveis)
 
 
 
@@ -77,15 +81,16 @@ def excluir_atleta(atleta_id):
 @atletas_bp.route("/atletas/editar/<int:atleta_id>", methods=["GET", "POST"])
 def editar_atleta(atleta_id):
     atleta = Atleta.query.get_or_404(atleta_id)
+    niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
         novo_nome = request.form.get("nome")
         novo_cpf = request.form.get("cpf")
         novo_sexo = request.form.get("sexo")
-        novo_nivel = request.form.get("nivel")
+        novo_nivel_id = int(request.form.get("nivel"))
 
         if not novo_cpf.isdigit() or len(novo_cpf) != 11:
-            flash("CPF deve conter exatamente 11 números (somente números).", "error")
+            flash("CPF deve conter exatamente 11 números.", "error")
             return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
 
         cpf_existente = Atleta.query.filter_by(cpf=novo_cpf).first()
@@ -105,34 +110,28 @@ def editar_atleta(atleta_id):
             parceiro = inscricao.atleta2 if inscricao.atleta1_id == atleta.id else inscricao.atleta1
 
             parceiro_sexo = parceiro.sexo.strip().lower()
-            parceiro_nivel = parceiro.nivel.strip().lower()
             modalidade = categoria.modalidade.strip().lower()
-            categoria_nivel = categoria.nivel.strip().lower()
+
+            if novo_nivel_id != parceiro.nivel_id:
+                flash(
+                    f"Não é possível alterar este atleta: a inscrição com {parceiro.nome} ficaria com níveis diferentes.",
+                    "error"
+                )
+                return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
+
+            if novo_nivel_id != categoria.nivel_id:
+                flash(
+                    f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} ficaria com nível incompatível.",
+                    "error"
+                )
+                return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
 
             novo_sexo_normalizado = novo_sexo.strip().lower()
-            novo_nivel_normalizado = novo_nivel.strip().lower()
 
-            # Regra: atleta e parceiro precisam continuar no mesmo nível
-            if novo_nivel_normalizado != parceiro_nivel:
-                flash(
-                    f"Não é possível alterar este atleta: a inscrição com {parceiro.nome} ficaria com níveis diferentes. Cancele/exclua a inscrição antes de realizar essa alteração.",
-                    "error"
-                )
-                return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
-
-            # Regra: nível do atleta precisa continuar compatível com a categoria
-            if novo_nivel_normalizado != categoria_nivel:
-                flash(
-                    f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} ficaria com nível incompatível. Cancele/exclua a inscrição antes de realizar essa alteração.",
-                    "error"
-                )
-                return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
-
-            # Regra: sexo precisa continuar compatível com a modalidade
             if modalidade == "masculino":
                 if novo_sexo_normalizado != "masculino" or parceiro_sexo != "masculino":
                     flash(
-                        f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} exige dupla masculina. Cancele/exclua a inscrição antes de realizar essa alteração.",
+                        f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} exige dupla masculina.",
                         "error"
                     )
                     return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
@@ -140,7 +139,7 @@ def editar_atleta(atleta_id):
             elif modalidade == "feminino":
                 if novo_sexo_normalizado != "feminino" or parceiro_sexo != "feminino":
                     flash(
-                        f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} exige dupla feminina. Cancele/exclua a inscrição antes de realizar essa alteração.",
+                        f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} exige dupla feminina.",
                         "error"
                     )
                     return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
@@ -148,7 +147,7 @@ def editar_atleta(atleta_id):
             elif modalidade == "misto":
                 if novo_sexo_normalizado == parceiro_sexo:
                     flash(
-                        f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} deixaria de ser mista. Cancele/exclua a inscrição antes de realizar essa alteração.",
+                        f"Não é possível alterar este atleta: a inscrição na categoria {categoria.nome} deixaria de ser mista.",
                         "error"
                     )
                     return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
@@ -156,11 +155,11 @@ def editar_atleta(atleta_id):
         atleta.nome = novo_nome
         atleta.cpf = novo_cpf
         atleta.sexo = novo_sexo
-        atleta.nivel = novo_nivel
+        atleta.nivel_id = novo_nivel_id
 
         db.session.commit()
 
         flash("Atleta atualizado com sucesso!", "success")
         return redirect(url_for("atletas.listar_atletas"))
 
-    return render_template("editar_atleta.html", atleta=atleta)
+    return render_template("editar_atleta.html", atleta=atleta, niveis=niveis)

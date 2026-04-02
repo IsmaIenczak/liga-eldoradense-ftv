@@ -1,16 +1,25 @@
 from extensions import db
 
 
+class Nivel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(50), nullable=False, unique=True)
+
+    def __repr__(self):
+        return f"<Nivel {self.nome}>"
+
+
 class Atleta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     cpf = db.Column(db.String(11), nullable=False, unique=True)
     sexo = db.Column(db.String(10), nullable=False)
-    nivel = db.Column(db.String(20), nullable=False)
+
+    nivel_id = db.Column(db.Integer, db.ForeignKey("nivel.id"), nullable=False)
+    nivel = db.relationship("Nivel")
 
     def __repr__(self):
         return f"<Atleta {self.nome}>"
-
 
 
 class Evento(db.Model):
@@ -27,26 +36,23 @@ class Evento(db.Model):
         return f"<Evento {self.nome}>"
 
 
-
-
 class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     modalidade = db.Column(db.String(20), nullable=False)
-    nivel = db.Column(db.String(20), nullable=False)
     vagas = db.Column(db.Integer, nullable=False)
+
+    nivel_id = db.Column(db.Integer, db.ForeignKey("nivel.id"), nullable=False)
+    nivel = db.relationship("Nivel")
 
     evento_id = db.Column(db.Integer, db.ForeignKey("evento.id"), nullable=False)
     evento = db.relationship("Evento", backref="categorias")
 
     @property
     def nome(self):
-        return f"{self.modalidade} {self.nivel}"
+        return f"{self.modalidade} {self.nivel.nome}"
 
     def __repr__(self):
         return f"<Categoria {self.nome}>"
-
-
-
 
 
 class Inscricao(db.Model):

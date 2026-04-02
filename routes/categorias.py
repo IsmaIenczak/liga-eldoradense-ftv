@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from extensions import db
-from models import Evento, Categoria
+from models import Evento, Categoria, Nivel
 
 
 categorias_bp = Blueprint("categorias", __name__)
@@ -9,10 +9,11 @@ categorias_bp = Blueprint("categorias", __name__)
 @categorias_bp.route("/categorias/nova", methods=["GET", "POST"])
 def nova_categoria():
     eventos = Evento.query.all()
+    niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
         modalidade = request.form.get("modalidade")
-        nivel = request.form.get("nivel")
+        nivel_id = int(request.form.get("nivel"))
         evento_id = request.form.get("evento")
         vagas = request.form.get("vagas")
 
@@ -33,7 +34,7 @@ def nova_categoria():
         existente = Categoria.query.filter_by(
             evento_id=int(evento_id),
             modalidade=modalidade,
-            nivel=nivel
+            nivel_id=nivel_id
         ).first()
 
         if existente:
@@ -42,7 +43,7 @@ def nova_categoria():
 
         nova = Categoria(
             modalidade=modalidade,
-            nivel=nivel,
+            nivel_id=nivel_id,
             vagas=vagas,
             evento_id=int(evento_id)
         )
@@ -53,7 +54,7 @@ def nova_categoria():
         flash("Categoria criada com sucesso!", "success")
         return redirect(url_for("categorias.listar_categorias"))
 
-    return render_template("nova_categoria.html", eventos=eventos)
+    return render_template("nova_categoria.html", eventos=eventos, niveis=niveis)
 
 
 
@@ -89,10 +90,11 @@ def excluir_categoria(categoria_id):
 def editar_categoria(categoria_id):
     categoria = Categoria.query.get_or_404(categoria_id)
     eventos = Evento.query.all()
+    niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
         nova_modalidade = request.form.get("modalidade")
-        novo_nivel = request.form.get("nivel")
+        novo_nivel_id = int(request.form.get("nivel"))
         novo_evento_id = int(request.form.get("evento"))
         novas_vagas = request.form.get("vagas")
 
@@ -134,13 +136,10 @@ def editar_categoria(categoria_id):
 
                 sexo1 = atleta1.sexo.strip().lower()
                 sexo2 = atleta2.sexo.strip().lower()
-                nivel1 = atleta1.nivel.strip().lower()
-                nivel2 = atleta2.nivel.strip().lower()
 
                 nova_modalidade_normalizada = nova_modalidade.strip().lower()
-                novo_nivel_normalizado = novo_nivel.strip().lower()
 
-                if nivel1 != novo_nivel_normalizado or nivel2 != novo_nivel_normalizado:
+                if atleta1.nivel_id != novo_nivel_id or atleta2.nivel_id != novo_nivel_id:
                     flash(
                         f"Não é possível alterar esta categoria: a inscrição da dupla {atleta1.nome} e {atleta2.nome} ficaria com nível incompatível.",
                         "error"
@@ -174,7 +173,7 @@ def editar_categoria(categoria_id):
         categoria_existente = Categoria.query.filter_by(
             evento_id=novo_evento_id,
             modalidade=nova_modalidade,
-            nivel=novo_nivel
+            nivel_id=novo_nivel_id
         ).first()
 
         if categoria_existente and categoria_existente.id != categoria.id:
@@ -182,7 +181,7 @@ def editar_categoria(categoria_id):
             return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
         categoria.modalidade = nova_modalidade
-        categoria.nivel = novo_nivel
+        categoria.nivel_id = novo_nivel_id
         categoria.vagas = novas_vagas
         categoria.evento_id = novo_evento_id
 
@@ -191,4 +190,9 @@ def editar_categoria(categoria_id):
         flash("Categoria atualizada com sucesso!", "success")
         return redirect(url_for("categorias.listar_categorias"))
 
-    return render_template("editar_categoria.html", categoria=categoria, eventos=eventos)
+    return render_template(
+        "editar_categoria.html",
+        categoria=categoria,
+        eventos=eventos,
+        niveis=niveis
+    )

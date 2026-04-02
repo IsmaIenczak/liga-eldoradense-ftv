@@ -1,7 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}Página Inicial{% endblock %}
-
 {% block content %}
-    <p>Bem-vindo ao sistema oficial da Liga Eldoradense.</p>
+<h2>Painel Geral</h2>
+
+<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+    <div style="border:1px solid #ccc; padding:12px; min-width:180px;">
+        <h3>Total de Atletas</h3>
+        <p>{{ total_atletas }}</p>
+    </div>
+
+    <div style="border:1px solid #ccc; padding:12px; min-width:180px;">
+        <h3>Total de Eventos</h3>
+        <p>{{ total_eventos }}</p>
+    </div>
+
+    <div style="border:1px solid #ccc; padding:12px; min-width:180px;">
+        <h3>Total de Categorias</h3>
+        <p>{{ total_categorias }}</p>
+    </div>
+
+    <div style="border:1px solid #ccc; padding:12px; min-width:180px;">
+        <h3>Total de Inscrições</h3>
+        <p>{{ total_inscricoes }}</p>
+    </div>
+
+    <div style="border:1px solid #ccc; padding:12px; min-width:180px;">
+        <h3>Categorias Lotadas</h3>
+        <p>{{ categorias_lotadas }}</p>
+    </div>
+</div>
+
+<h2>Eventos Cadastrados</h2>
+
+{% if eventos %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Data</th>
+                <th>Arena</th>
+                <th>Cidade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evento in eventos %}
+                <tr>
+                    <td>{{ evento.nome }}</td>
+                    <td>{{ evento.data }}</td>
+                    <td>{{ evento.arena }}</td>
+                    <td>{{ evento.cidade }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nenhum evento cadastrado até o momento.</p>
+{% endif %}
 {% endblock %}

@@ -29,9 +29,9 @@
 
     <label>Nível:</label>
     <select name="nivel" required>
-        <option value="iniciante">Iniciante</option>
-        <option value="intermediario">Intermediário</option>
-        <option value="avancado">Avançado</option>
+    {% for nivel in niveis %}
+        <option value="{{ nivel.id }}">{{ nivel.nome }}</option>
+    {% endfor %}
     </select><br><br>
 
     <button type="submit">Cadastrar</button>
