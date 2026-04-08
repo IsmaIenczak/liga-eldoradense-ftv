@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Atletas</h2>
+<h2>
+    {% if status == "pendente" %}
+        Atletas Pendentes
+    {% elif status == "validado" %}
+        Atletas Validados
+    {% else %}
+        Atletas
+    {% endif %}
+</h2>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -14,6 +22,10 @@
 {% endwith %}
 
 {% if atletas %}
+    <a href="{{ url_for('atletas.listar_atletas') }}">Todos</a> |
+    <a href="{{ url_for('atletas.listar_atletas', status='pendente') }}">Pendentes</a> |
+    <a href="{{ url_for('atletas.listar_atletas', status='validado') }}">Validados</a>
+
     <table border="1" cellpadding="8">
         <thead>
             <tr>
@@ -83,7 +95,13 @@
     </table>
 
 {% else %}
-    <p>Nenhum atleta cadastrado.</p>
+    {% if status == "pendente" %}
+        <p>Todos os atletas já foram validados.</p>
+    {% elif status == "validado" %}
+        <p>Nenhum atleta validado encontrado.</p>
+    {% else %}
+        <p>Nenhum atleta cadastrado.</p>
+    {% endif %}
 {% endif %}
 
 {% endblock %}

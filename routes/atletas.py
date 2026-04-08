@@ -9,8 +9,17 @@ atletas_bp = Blueprint("atletas", __name__)
 
 @atletas_bp.route("/atletas")
 def listar_atletas():
-    atletas = Atleta.query.all()
-    return render_template("atletas.html", atletas=atletas)
+    status = request.args.get("status")
+
+    if status == "pendente":
+        atletas = Atleta.query.filter_by(nivel_validado=False).all()
+    elif status == "validado":
+        atletas = Atleta.query.filter_by(nivel_validado=True).all()
+    else:
+        atletas = Atleta.query.all()
+
+    return render_template("atletas.html", atletas=atletas, status=status)
+
 
 
 @atletas_bp.route("/atletas/novo", methods=["GET", "POST"])
