@@ -33,6 +33,8 @@ def nova_inscricao():
     atletas = Atleta.query.all()
     eventos = Evento.query.all()
 
+    
+
     if not eventos:
         flash("Cadastre um evento antes de criar inscrições.", "error")
         return render_template(
@@ -62,6 +64,11 @@ def nova_inscricao():
         if not atleta1 or not atleta2 or not categoria or not evento_id:
             flash("Dados inválidos.", "error")
             return redirect(url_for("inscricoes.nova_inscricao"))
+        
+        if not atleta1.residente_eldorado and not atleta2.residente_eldorado:
+            flash("Pelo menos um dos atletas da dupla deve ser residente de Eldorado do Sul.", "error")
+            return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
+
 
         if categoria.evento_id != int(evento_id):
             flash("A categoria selecionada não pertence ao evento escolhido.", "error")

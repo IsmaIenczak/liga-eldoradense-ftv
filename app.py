@@ -19,7 +19,6 @@ db.init_app(app)
 
 
 
-
 @app.route("/")
 def home():
     total_atletas = Atleta.query.count()

@@ -14,9 +14,11 @@ class Atleta(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     cpf = db.Column(db.String(11), nullable=False, unique=True)
     sexo = db.Column(db.String(10), nullable=False)
-
+    
     nivel_id = db.Column(db.Integer, db.ForeignKey("nivel.id"), nullable=False)
     nivel = db.relationship("Nivel")
+
+    residente_eldorado = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"<Atleta {self.nome}>"

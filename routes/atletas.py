@@ -22,6 +22,9 @@ def cadastrar_atleta():
         cpf = request.form.get("cpf")
         sexo = request.form.get("sexo")
         nivel_id = request.form.get("nivel")
+        residente_eldorado = request.form.get("residente_eldorado")
+
+        residente_eldorado = True if residente_eldorado == "sim" else False
 
         if not cpf.isdigit() or len(cpf) != 11:
             return render_template(
@@ -39,11 +42,12 @@ def cadastrar_atleta():
             )
 
         novo_atleta = Atleta(
-            nome=nome,
-            cpf=cpf,
-            sexo=sexo,
-            nivel_id=int(nivel_id)
-        )
+        nome=nome,
+        cpf=cpf,
+        sexo=sexo,
+        nivel_id=int(nivel_id),
+        residente_eldorado=residente_eldorado
+    )
 
         db.session.add(novo_atleta)
         db.session.commit()
@@ -77,7 +81,6 @@ def excluir_atleta(atleta_id):
     return redirect(url_for("atletas.listar_atletas"))
 
 
-
 @atletas_bp.route("/atletas/editar/<int:atleta_id>", methods=["GET", "POST"])
 def editar_atleta(atleta_id):
     atleta = Atleta.query.get_or_404(atleta_id)
@@ -88,6 +91,8 @@ def editar_atleta(atleta_id):
         novo_cpf = request.form.get("cpf")
         novo_sexo = request.form.get("sexo")
         novo_nivel_id = int(request.form.get("nivel"))
+        novo_residente_eldorado = request.form.get("residente_eldorado")
+        novo_residente_eldorado = True if novo_residente_eldorado == "sim" else False
 
         if not novo_cpf.isdigit() or len(novo_cpf) != 11:
             flash("CPF deve conter exatamente 11 números.", "error")
@@ -126,6 +131,13 @@ def editar_atleta(atleta_id):
                 )
                 return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
 
+            if not novo_residente_eldorado and not parceiro.residente_eldorado:
+                flash(
+                    f"Não é possível alterar este atleta: na inscrição com {parceiro.nome}, pelo menos um atleta da dupla deve ser residente de Eldorado do Sul.",
+                    "error"
+                )
+                return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
+
             novo_sexo_normalizado = novo_sexo.strip().lower()
 
             if modalidade == "masculino":
@@ -156,6 +168,7 @@ def editar_atleta(atleta_id):
         atleta.cpf = novo_cpf
         atleta.sexo = novo_sexo
         atleta.nivel_id = novo_nivel_id
+        atleta.residente_eldorado = novo_residente_eldorado
 
         db.session.commit()
 

@@ -44,6 +44,13 @@
     </select>
     <br><br>
 
+    <label>Reside em Eldorado do Sul?</label>
+    <select name="residente_eldorado" required>
+        <option value="sim" {% if atleta.residente_eldorado %}selected{% endif %}>Sim</option>
+        <option value="nao" {% if not atleta.residente_eldorado %}selected{% endif %}>Não</option>
+    </select>
+
+
     <button type="submit">Salvar Alterações</button>
 
 </form>
