@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from extensions import db
-from models import Nivel
+from models import Nivel, Atleta, Categoria
 
 niveis_bp = Blueprint("niveis", __name__)
 
@@ -35,3 +35,54 @@ def novo_nivel():
         return redirect(url_for("niveis.listar_niveis"))
 
     return render_template("novo_nivel.html")
+
+
+@niveis_bp.route("/niveis/editar/<int:nivel_id>", methods=["GET", "POST"])
+def editar_nivel(nivel_id):
+    nivel = Nivel.query.get_or_404(nivel_id)
+
+    if request.method == "POST":
+        novo_nome = request.form.get("nome")
+
+        if not novo_nome or not novo_nome.strip():
+            flash("Informe um nome válido para o nível.", "error")
+            return redirect(url_for("niveis.editar_nivel", nivel_id=nivel.id))
+
+        novo_nome = novo_nome.strip()
+
+        existente = Nivel.query.filter(
+            db.func.lower(Nivel.nome) == novo_nome.lower()
+        ).first()
+
+        if existente and existente.id != nivel.id:
+            flash("Já existe um nível com esse nome.", "error")
+            return redirect(url_for("niveis.editar_nivel", nivel_id=nivel.id))
+
+        nivel.nome = novo_nome
+        db.session.commit()
+
+        flash("Nível atualizado com sucesso!", "success")
+        return redirect(url_for("niveis.listar_niveis"))
+
+    return render_template("editar_nivel.html", nivel=nivel)
+
+
+@niveis_bp.route("/niveis/excluir/<int:nivel_id>", methods=["POST"])
+def excluir_nivel(nivel_id):
+    nivel = Nivel.query.get_or_404(nivel_id)
+
+    atleta_vinculado = Atleta.query.filter_by(nivel_id=nivel.id).first()
+    categoria_vinculada = Categoria.query.filter_by(nivel_id=nivel.id).first()
+
+    if atleta_vinculado or categoria_vinculada:
+        flash(
+            "Este nível não pode ser excluído porque está vinculado a atletas ou categorias.",
+            "error"
+        )
+        return redirect(url_for("niveis.listar_niveis"))
+
+    db.session.delete(nivel)
+    db.session.commit()
+
+    flash("Nível excluído com sucesso!", "success")
+    return redirect(url_for("niveis.listar_niveis"))

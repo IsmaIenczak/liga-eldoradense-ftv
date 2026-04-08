@@ -46,7 +46,8 @@ def cadastrar_atleta():
         cpf=cpf,
         sexo=sexo,
         nivel_id=int(nivel_id),
-        residente_eldorado=residente_eldorado
+        residente_eldorado=residente_eldorado,
+        nivel_validado=False
     )
 
         db.session.add(novo_atleta)
@@ -176,3 +177,25 @@ def editar_atleta(atleta_id):
         return redirect(url_for("atletas.listar_atletas"))
 
     return render_template("editar_atleta.html", atleta=atleta, niveis=niveis)
+
+
+@atletas_bp.route("/atletas/validar-nivel/<int:atleta_id>", methods=["POST"])
+def validar_nivel_atleta(atleta_id):
+    atleta = Atleta.query.get_or_404(atleta_id)
+
+    atleta.nivel_validado = True
+    db.session.commit()
+
+    flash(f"Nível do atleta {atleta.nome} validado com sucesso!", "success")
+    return redirect(url_for("atletas.listar_atletas"))
+
+
+@atletas_bp.route("/atletas/desvalidar-nivel/<int:atleta_id>", methods=["POST"])
+def desvalidar_nivel_atleta(atleta_id):
+    atleta = Atleta.query.get_or_404(atleta_id)
+
+    atleta.nivel_validado = False
+    db.session.commit()
+
+    flash(f"Validação de nível do atleta {atleta.nome} removida com sucesso!", "success")
+    return redirect(url_for("atletas.listar_atletas"))

@@ -18,12 +18,37 @@
         <thead>
             <tr>
                 <th>Nome</th>
+                <th>Ações</th>
             </tr>
         </thead>
+
         <tbody>
             {% for nivel in niveis %}
                 <tr>
                     <td>{{ nivel.nome }}</td>
+                    <td>
+                        <a href="{{ url_for('niveis.editar_nivel', nivel_id=nivel.id) }}"
+                           style="
+                                display:inline-block;
+                                padding:4px 8px;
+                                border:1px solid #999;
+                                background-color:#eee;
+                                text-decoration:none;
+                                color:black;
+                                margin-right:4px;
+                           ">
+                            Editar
+                        </a>
+
+                        <form action="{{ url_for('niveis.excluir_nivel', nivel_id=nivel.id) }}"
+                              method="POST"
+                              style="display:inline;">
+                            <button type="submit"
+                                    onclick="return confirm('Tem certeza que deseja excluir este nível?')">
+                                Excluir
+                            </button>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -31,4 +56,5 @@
 {% else %}
     <p>Nenhum nível cadastrado.</p>
 {% endif %}
+
 {% endblock %}

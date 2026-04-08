@@ -132,6 +132,15 @@ def nova_inscricao():
                 flash("Um dos atletas já está inscrito para competir nesta categoria.", "error")
                 return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
 
+
+        atletas_pendentes = []
+
+        if not atleta1.nivel_validado:
+            atletas_pendentes.append(atleta1.nome)
+
+        if not atleta2.nivel_validado:
+            atletas_pendentes.append(atleta2.nome)
+
         nova = Inscricao(
             atleta1_id=atleta1_id,
             atleta2_id=atleta2_id,
@@ -142,7 +151,17 @@ def nova_inscricao():
         db.session.commit()
 
         flash("Inscrição realizada com sucesso!", "success")
+
+        if atletas_pendentes:
+            nomes = ", ".join(atletas_pendentes)
+            flash(
+                f"Atenção: a inscrição foi realizada, mas o nível do(s) atleta(s) {nomes} ainda não foi validado.",
+                "error"
+            )
+
         return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
+    
+
 
     return render_template(
         "nova_inscricao.html",

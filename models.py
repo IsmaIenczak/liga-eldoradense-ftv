@@ -19,6 +19,7 @@ class Atleta(db.Model):
     nivel = db.relationship("Nivel")
 
     residente_eldorado = db.Column(db.Boolean, nullable=False, default=False)
+    nivel_validado = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"<Atleta {self.nome}>"
