@@ -1,9 +1,10 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template
+from flask import Flask, render_template, session, redirect, url_for, request
 from extensions import db
 from models import Atleta, Evento, Categoria, Inscricao, Usuario
 from routes.niveis import niveis_bp
+from datetime import timedelta
 
 
 
@@ -16,6 +17,21 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///liga.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+
+app.permanent_session_lifetime = timedelta(minutes=30)
+
+@app.before_request
+def proteger_rotas():
+    rotas_livres = ["auth.login", "static"]
+
+    if request.endpoint is None:
+        return
+
+    if request.endpoint in rotas_livres:
+        return
+
+    if "usuario_id" not in session:
+        return redirect(url_for("auth.login"))
 
 
 
@@ -68,12 +84,12 @@ with app.app_context():
             email="admin@admin.com",
             tipo="admin"
         )
-        admin.set_senha("123456")
+        admin.set_senha("Admin@Liga2026!")
 
         db.session.add(admin)
         db.session.commit()
 
-        print("Admin criado com sucesso: admin@admin.com / 123456")
+        print("Admin criado com sucesso: admin@admin.com")
 
 
 

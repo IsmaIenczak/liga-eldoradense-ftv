@@ -28,8 +28,13 @@
 
     <header>
         <h1>Liga Eldoradense de Futevôlei</h1>
+
         {% if session.get("usuario_id") %}
-            <!-- 🧭 MENU PRINCIPAL -->
+            <p style="margin-bottom: 10px;">
+                Logado como {{ session.get("usuario_tipo") }} |
+                <a href="{{ url_for('auth.logout') }}">Sair</a>
+            </p>
+
             <nav>
                 <a href="/">Início</a> |
                 <a href="/atletas">Atletas</a> |
@@ -41,9 +46,10 @@
                 <a href="/inscricoes">Inscrições</a> |
                 <a href="/inscricoes/nova">Nova Inscrição</a> |
                 <a href="/niveis">Níveis</a> |
-                <a href="/niveis/novo">Novo Nível</a> 
+                <a href="/niveis/novo">Novo Nível</a>
             </nav>
         {% endif %}
+
         <hr>
     </header>
 

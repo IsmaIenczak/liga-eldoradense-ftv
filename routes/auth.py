@@ -16,6 +16,7 @@ def login():
             flash("Email ou senha inválidos.", "error")
             return redirect(url_for("auth.login"))
 
+        session.permanent = True
         session["usuario_id"] = usuario.id
         session["usuario_tipo"] = usuario.tipo
 
