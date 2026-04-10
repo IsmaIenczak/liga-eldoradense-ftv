@@ -28,7 +28,7 @@ def nova_categoria():
             return redirect(url_for("categorias.nova_categoria"))
 
         if vagas % 2 != 0:
-            flash("O número de vagas deve ser par.", "error")
+            flash("O número de vagas deve ser par para geração do chaveamento.", "error")
             return redirect(url_for("categorias.nova_categoria"))
 
         existente = Categoria.query.filter_by(

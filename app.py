@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template
 from extensions import db
-from models import Atleta, Evento, Categoria, Inscricao
+from models import Atleta, Evento, Categoria, Inscricao, Usuario
 from routes.niveis import niveis_bp
 
 
@@ -46,6 +46,7 @@ from routes.atletas import atletas_bp
 from routes.eventos import eventos_bp
 from routes.categorias import categorias_bp
 from routes.inscricoes import inscricoes_bp
+from routes.auth import auth_bp
 
 
 app.register_blueprint(atletas_bp)
@@ -53,9 +54,28 @@ app.register_blueprint(eventos_bp)
 app.register_blueprint(categorias_bp)
 app.register_blueprint(inscricoes_bp)
 app.register_blueprint(niveis_bp)
+app.register_blueprint(auth_bp)
+
+
 
 with app.app_context():
     db.create_all()
+
+    admin_existente = Usuario.query.filter_by(email="admin@admin.com").first()
+
+    if not admin_existente:
+        admin = Usuario(
+            email="admin@admin.com",
+            tipo="admin"
+        )
+        admin.set_senha("123456")
+
+        db.session.add(admin)
+        db.session.commit()
+
+        print("Admin criado com sucesso: admin@admin.com / 123456")
+
+
 
 
 if __name__ == "__main__":
