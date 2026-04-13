@@ -45,6 +45,7 @@ def login():
     return render_template("login.html")
 
 
+
 @auth_bp.route("/cadastro-atleta", methods=["GET", "POST"])
 def cadastro_atleta():
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()

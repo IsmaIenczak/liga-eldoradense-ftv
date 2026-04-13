@@ -29,10 +29,9 @@ def listar_atletas():
 
 
 
-
 @atletas_bp.route("/atletas/novo", methods=["GET", "POST"])
 @admin_required
-def cadastrar_atleta():
+def cadastrar_atleta(): 
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
