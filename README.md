@@ -1,190 +1,180 @@
-🏐 Liga Eldoradense de Futevôlei — Sistema Web (Flask)
+# 🏐 Liga Eldoradense de Futevôlei — Web System (Flask)
 
-Sistema web completo para gerenciamento de campeonatos de futevôlei, desenvolvido com Python, Flask e SQLAlchemy, com regras reais de competição e fluxo de uso para administradores e atletas.
+A full-stack web application for managing footvolley tournaments, built with **Python, Flask, and SQLAlchemy**, featuring real-world competition rules and role-based user flows.
 
-🚀 Visão Geral
+---
 
-A aplicação permite:
+## 🚀 Overview
 
-Gerenciar atletas, eventos e categorias
-Realizar inscrições de duplas com validações completas
-Permitir que atletas criem contas e se inscrevam nos campeonatos
-Garantir integridade de dados com regras de negócio robustas
+The application allows:
 
-O sistema já funciona como uma base sólida para evolução futura (dashboard, chaveamento, app mobile, etc.).
+- Manage athletes, events, and categories
+- Create team registrations with full validation
+- Allow athletes to create accounts and register themselves
+- Ensure data integrity through strong business rules
 
-👤 Tipos de Usuário
-🔧 Administrador
-Gerencia todo o sistema
-Cadastra atletas, eventos, categorias e inscrições
-Valida nível dos atletas
-Controla integridade das competições
-🏐 Atleta
-Cria conta própria
-Faz login no sistema
-Realiza suas próprias inscrições
-Visualiza suas participações
-⚙️ Funcionalidades
-👤 Atletas
-Cadastro manual (admin) ou auto cadastro (atleta)
-Validação de CPF (único e com 11 dígitos)
-Campo de telefone
-Definição de nível
-Indicação de residência em Eldorado do Sul
-Validação de nível pelo admin
-🔐 Autenticação
-Login com email e senha
-Senha com critérios de segurança:
-mínimo 8 caracteres
-1 letra maiúscula
-1 número
-1 caractere especial
-Sessão com expiração
-Controle de acesso por tipo de usuário
-🏟️ Eventos
-Cadastro de eventos com:
-nome
-data
-local completo
-Edição e exclusão (com validação de dependências)
-🏆 Categorias
-Criadas por evento
-Definições:
-modalidade: masculino, feminino ou misto
-nível: iniciante, intermediário ou avançado
-número de vagas (par e mínimo de 4)
-Regras:
-Não permite duplicidade de categoria no mesmo evento
-Não permite edição que invalide inscrições
-Não permite reduzir vagas abaixo do número de inscritos
-🧩 Inscrições (Duplas)
-Realizadas por admin ou pelo próprio atleta
-Seleção dinâmica por evento
-Regras implementadas:
+The system already serves as a solid foundation for future evolution, such as dashboards, bracket generation, and a future mobile app.
 
-✔ atletas devem ser diferentes
-✔ atletas devem ter mesmo nível
-✔ categoria deve corresponder ao nível
-✔ compatibilidade com modalidade (M/F/Misto)
-✔ impedir dupla duplicada
-✔ impedir atleta em mais de uma dupla na mesma categoria
-✔ impedir inscrição em categoria lotada
-✔ pelo menos 1 atleta deve ser residente de Eldorado do Sul
-✔ aviso quando nível do atleta ainda não foi validado
+---
 
-📊 Área do Atleta
-Visualização das próprias inscrições
-Criação de nova inscrição escolhendo parceiro
-Interface separada da área administrativa
-🧠 Regras de Integridade
+## 👤 User Roles
 
-O sistema protege automaticamente contra inconsistências:
+### 🔧 Administrator
 
-Alteração de atleta não pode invalidar inscrições existentes
-Alteração de categoria respeita duplas já inscritas
-Exclusões bloqueadas quando há vínculos
-Validações completas no backend (não dependem do front-end)
-🏗️ Arquitetura
+- Manages the entire system
+- Registers athletes, events, categories, and registrations
+- Validates athlete levels
+- Ensures competition integrity
 
-Projeto organizado com Blueprints do Flask:
+### 🏐 Athlete
 
-  routes/
+- Creates their own account
+- Logs into the system
+- Registers for competitions
+- Views their own registrations
+
+---
+
+## ⚙️ Features
+
+### 👤 Athlete Management
+
+- Manual registration by admin or self-registration by athlete
+- CPF validation (11 digits and unique)
+- Phone number field
+- Skill level assignment
+- Eldorado do Sul residency flag
+- Level validation by admin
+
+### 🔐 Authentication
+
+- Login with email and password
+- Strong password requirements
+- Session management
+- Role-based access control
+
+### 🏟️ Event Management
+
+- Create, edit, and delete events
+- Full location data
+- Dependency validations before deletion
+
+### 🏆 Category Management
+
+- Categories per event
+- Modalities: male, female, and mixed
+- Levels: beginner, intermediate, and advanced
+- Slot rules: minimum of 4 and even number only
+
+### 🧩 Team Registrations
+
+Business rules implemented:
+
+- Athletes must be different
+- Athletes must have the same skill level
+- Category must match the team's level
+- Modality compatibility is enforced
+- Duplicate teams are prevented
+- An athlete cannot play twice in the same category
+- Registrations are blocked when the category is full
+- At least one athlete in the team must be from Eldorado do Sul
+- Warning is shown when an athlete level has not yet been validated
+
+### 🏐 Athlete Area
+
+- View personal registrations
+- Create new registrations
+- Choose a partner
+- Separate interface from admin area
+
+---
+
+## 🧠 Data Integrity
+
+The system automatically prevents:
+
+- Changes that would invalidate existing registrations
+- Slot reduction below the current number of registrations
+- Deletions when related dependencies exist
+- Inconsistencies between level, category, and team composition
+
+---
+
+## 🏗️ Architecture
+
+```bash
+routes/
+├── auth.py
 ├── atletas.py
 ├── eventos.py
 ├── categorias.py
 ├── inscricoes.py
-├── niveis.py
-└── auth.py
+└── niveis.py
+```
 
+Other important files:
 
-Outros componentes:
+- `models.py` — database models
+- `extensions.py` — SQLAlchemy initialization
+- `utils.py` — utility functions and decorators
+- `templates/` — Jinja2 templates
 
-models.py → modelos do banco
-extensions.py → configuração do SQLAlchemy
-utils.py → utilitários (auth, validações)
-templates/ → páginas HTML (Jinja2)
-.env → variáveis de ambiente
+---
 
-⚙️ Tecnologias Utilizadas
-Python 3
-Flask
-Flask-SQLAlchemy
-SQLite
-Jinja2
-HTML5 + CSS
-JavaScript (Fetch API)
-python-dotenv
-🖥️ Instalação
-1. Clonar repositório:
- bash:
-    git clone https://github.com/seu-usuario/liga-eldoradense-ftv.git
-    cd liga-eldoradense-ftv
+## 🛠️ Tech Stack
 
-2. Criar ambiente virtual:
-  python -m venv venv
+- Python 3
+- Flask
+- Flask-SQLAlchemy
+- SQLite
+- Jinja2
+- HTML
+- CSS
+- JavaScript
+- python-dotenv
 
+---
 
-Ativar:
+## 🖥️ Running the Project
 
-Windows:
-  venv\Scripts\activate
+```bash
+git clone https://github.com/your-user/liga-eldoradense-ftv.git
+cd liga-eldoradense-ftv
 
-Linux/macOS
-  source venv/bin/activate
+python -m venv venv
+venv\Scripts\activate  # Windows
 
+pip install -r requirements.txt
 
-3. Instalar dependências:
-  bash:
-  pip install -r requirements.txt
+# create .env file
+SECRET_KEY=your_secret_key
 
+python app.py
+```
 
-4. Configurar variáveis de ambiente:
+---
 
-  Criar arquivo .env: 
-    SECRET_KEY=sua_chave_secreta_aqui
+## 🔑 Default Admin
 
-
-5. Executar aplicação
-  bash:
-    python app.py
-
-
-🔑 Acesso inicial
-
-Um administrador padrão é criado automaticamente:
-
+```text
 Email: admin@admin.com
-Senha: Admin@Liga2026!
+Password: Admin@Liga2026!
+```
 
+---
 
-🗄️ Banco de Dados
-  SQLite (liga.db)
-  Criado automaticamente na primeira execução
+## 🔮 Future Improvements
 
+- Dashboard with statistics
+- Automatic bracket generation
+- Athlete profile editing
+- Registration cancellation
+- Notifications via WhatsApp or email
+- REST API
+- Mobile app
 
-📊 Estrutura de Dados (Resumo)
-Evento
- └── Categoria
-       └── Inscrição (dupla)
+---
 
-Atleta
- └── Usuario (login)
+## 👨‍💻 Author
 
-
- 🔮 Próximas Evoluções
-Dashboard com estatísticas
-Sistema de chaveamento automático
-Cancelamento de inscrição pelo atleta em tempo hábil
-Edição de perfil do atleta
-Notificações (WhatsApp / email)
-Interface responsiva
-API para app mobile
-Aplicativo mobile (Flutter ou React Native)
-
-
-
-👨‍💻 Autor
-
-Desenvolvido por Ismael Ienczak
-
-Projeto real para gestão da Liga Eldoradense de Futevôlei, utilizado como sistema funcional e portfólio profissional.
+**Ismael Lenczak**
