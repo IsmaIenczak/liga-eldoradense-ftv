@@ -1,13 +1,18 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from sqlalchemy import or_
+
 from extensions import db
-from models import Atleta, Inscricao
 from models import Atleta, Inscricao, Nivel
+from utils import admin_required
 
 atletas_bp = Blueprint("atletas", __name__)
 
 
+
+
+
 @atletas_bp.route("/atletas")
+@admin_required
 def listar_atletas():
     status = request.args.get("status")
 
@@ -22,13 +27,18 @@ def listar_atletas():
 
 
 
+
+
+
 @atletas_bp.route("/atletas/novo", methods=["GET", "POST"])
+@admin_required
 def cadastrar_atleta():
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
         nome = request.form.get("nome")
         cpf = request.form.get("cpf")
+        telefone = request.form.get("telefone")
         sexo = request.form.get("sexo")
         nivel_id = request.form.get("nivel")
         residente_eldorado = request.form.get("residente_eldorado")
@@ -53,11 +63,12 @@ def cadastrar_atleta():
         novo_atleta = Atleta(
         nome=nome,
         cpf=cpf,
+        telefone=telefone,
         sexo=sexo,
         nivel_id=int(nivel_id),
         residente_eldorado=residente_eldorado,
         nivel_validado=False
-    )
+        )
 
         db.session.add(novo_atleta)
         db.session.commit()
@@ -69,7 +80,10 @@ def cadastrar_atleta():
 
 
 
+
+
 @atletas_bp.route("/atletas/excluir/<int:atleta_id>", methods=["POST"])
+@admin_required
 def excluir_atleta(atleta_id):
     atleta = Atleta.query.get_or_404(atleta_id)
 
@@ -91,7 +105,12 @@ def excluir_atleta(atleta_id):
     return redirect(url_for("atletas.listar_atletas"))
 
 
+
+
+
+
 @atletas_bp.route("/atletas/editar/<int:atleta_id>", methods=["GET", "POST"])
+@admin_required
 def editar_atleta(atleta_id):
     atleta = Atleta.query.get_or_404(atleta_id)
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
@@ -99,6 +118,7 @@ def editar_atleta(atleta_id):
     if request.method == "POST":
         novo_nome = request.form.get("nome")
         novo_cpf = request.form.get("cpf")
+        novo_telefone = request.form.get("telefone")
         novo_sexo = request.form.get("sexo")
         novo_nivel_id = int(request.form.get("nivel"))
         novo_residente_eldorado = request.form.get("residente_eldorado")
@@ -176,6 +196,7 @@ def editar_atleta(atleta_id):
 
         atleta.nome = novo_nome
         atleta.cpf = novo_cpf
+        atleta.telefone = novo_telefone
         atleta.sexo = novo_sexo
         atleta.nivel_id = novo_nivel_id
         atleta.residente_eldorado = novo_residente_eldorado
@@ -188,7 +209,11 @@ def editar_atleta(atleta_id):
     return render_template("editar_atleta.html", atleta=atleta, niveis=niveis)
 
 
+
+
+
 @atletas_bp.route("/atletas/validar-nivel/<int:atleta_id>", methods=["POST"])
+@admin_required
 def validar_nivel_atleta(atleta_id):
     atleta = Atleta.query.get_or_404(atleta_id)
 
@@ -199,7 +224,12 @@ def validar_nivel_atleta(atleta_id):
     return redirect(url_for("atletas.listar_atletas"))
 
 
+
+
+
+
 @atletas_bp.route("/atletas/desvalidar-nivel/<int:atleta_id>", methods=["POST"])
+@admin_required
 def desvalidar_nivel_atleta(atleta_id):
     atleta = Atleta.query.get_or_404(atleta_id)
 

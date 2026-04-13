@@ -1,12 +1,15 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+
 from extensions import db
 from models import Evento, Categoria, Nivel
+from utils import admin_required
 
 
 categorias_bp = Blueprint("categorias", __name__)
 
 
 @categorias_bp.route("/categorias/nova", methods=["GET", "POST"])
+@admin_required
 def nova_categoria():
     eventos = Evento.query.all()
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
@@ -28,7 +31,7 @@ def nova_categoria():
             return redirect(url_for("categorias.nova_categoria"))
 
         if vagas % 2 != 0:
-            flash("O número de vagas deve ser par para geração do chaveamento.", "error")
+            flash("O número de vagas deve ser par.", "error")
             return redirect(url_for("categorias.nova_categoria"))
 
         existente = Categoria.query.filter_by(
@@ -57,17 +60,15 @@ def nova_categoria():
     return render_template("nova_categoria.html", eventos=eventos, niveis=niveis)
 
 
-
-
 @categorias_bp.route("/categorias")
+@admin_required
 def listar_categorias():
     categorias = Categoria.query.all()
     return render_template("categorias.html", categorias=categorias)
 
 
-
-
 @categorias_bp.route("/categorias/excluir/<int:categoria_id>", methods=["POST"])
+@admin_required
 def excluir_categoria(categoria_id):
     categoria = Categoria.query.get_or_404(categoria_id)
 
@@ -85,8 +86,8 @@ def excluir_categoria(categoria_id):
     return redirect(url_for("categorias.listar_categorias"))
 
 
-
 @categorias_bp.route("/categorias/editar/<int:categoria_id>", methods=["GET", "POST"])
+@admin_required
 def editar_categoria(categoria_id):
     categoria = Categoria.query.get_or_404(categoria_id)
     eventos = Evento.query.all()

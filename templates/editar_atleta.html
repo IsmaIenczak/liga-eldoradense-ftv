@@ -23,6 +23,12 @@
     <input type="text" name="cpf" value="{{ atleta.cpf }}" required>
     <br><br>
 
+    <label for="telefone">Telefone (WhatsApp):</label>
+    <input type="text" id="telefone" name="telefone" value="{{ atleta.telefone or '' }}">
+
+    <br><br>
+
+
     <label>Sexo:</label>
     <select name="sexo" required>
         <option value="masculino" {% if atleta.sexo == "masculino" %}selected{% endif %}>

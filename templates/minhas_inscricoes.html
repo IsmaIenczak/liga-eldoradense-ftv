@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Minhas Inscrições</h2>
+
+<p>Atleta: <strong>{{ atleta.nome }}</strong></p>
+
+{% if inscricoes %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Evento</th>
+                <th>Categoria</th>
+                <th>Parceiro</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inscricao in inscricoes %}
+                <tr>
+                    <td>{{ inscricao.categoria.evento.nome }}</td>
+                    <td>{{ inscricao.categoria.nome }}</td>
+                    <td>
+                        {% if inscricao.atleta1_id == atleta.id %}
+                            {{ inscricao.atleta2.nome }}
+                        {% else %}
+                            {{ inscricao.atleta1.nome }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Você ainda não possui inscrições cadastradas.</p>
+{% endif %}
+{% endblock %}

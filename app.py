@@ -22,7 +22,7 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 
 @app.before_request
 def proteger_rotas():
-    rotas_livres = ["auth.login", "static"]
+    rotas_livres = ["auth.login", "auth.cadastro_atleta", "static"]
 
     if request.endpoint is None:
         return
@@ -37,6 +37,19 @@ def proteger_rotas():
 
 @app.route("/")
 def home():
+    if session.get("usuario_tipo") == "atleta":
+        atleta_id = session.get("atleta_id")
+
+        if not atleta_id:
+            return redirect(url_for("auth.logout"))
+
+        atleta = Atleta.query.get(atleta_id)
+
+        if not atleta:
+            return redirect(url_for("auth.logout"))
+
+        return render_template("home_atleta.html", atleta=atleta)
+
     total_atletas = Atleta.query.count()
     total_eventos = Evento.query.count()
     total_categorias = Categoria.query.count()
@@ -56,6 +69,7 @@ def home():
         categorias_lotadas=categorias_lotadas,
         eventos=eventos
     )
+
 
 
 from routes.atletas import atletas_bp

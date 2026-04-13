@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Nova Inscrição</h2>
+
+<p>Atleta logado: <strong>{{ atleta_logado.nome }}</strong></p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color: {% if category == 'error' %}red{% else %}green{% endif %};">
+        {{ message }}
+      </p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="POST">
+    <label for="evento">Evento:</label>
+    <select id="evento" name="evento" onchange="window.location='{{ url_for('inscricoes.nova_inscricao_atleta') }}?evento=' + this.value" required>
+        {% for evento in eventos %}
+            <option value="{{ evento.id }}" {% if evento.id == selected_evento_id %}selected{% endif %}>
+                {{ evento.nome }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label for="categoria">Categoria:</label>
+    <select id="categoria" name="categoria" required>
+        <option value="">Selecione</option>
+        {% for categoria in categorias %}
+            <option value="{{ categoria.id }}">
+                {{ categoria.nome }} ({{ categoria.vagas - categoria.inscricoes|length }} vagas restantes)
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label for="parceiro">Parceiro:</label>
+    <select id="parceiro" name="parceiro" required>
+        <option value="">Selecione</option>
+        {% for atleta in atletas %}
+            <option value="{{ atleta.id }}">
+                {{ atleta.nome }} - {{ atleta.nivel.nome }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <button type="submit">Confirmar inscrição</button>
+</form>
+{% endblock %}

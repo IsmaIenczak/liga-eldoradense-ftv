@@ -31,6 +31,7 @@
             <tr>
                 <th>Nome</th>
                 <th>CPF</th>
+                <th>Telefone</th>
                 <th>Sexo</th>
                 <th>Nível</th>
                 <th>Residente em Eldorado do Sul</th>
@@ -44,6 +45,7 @@
                 <tr>
                     <td>{{ atleta.nome }}</td>
                     <td>{{ atleta.cpf }}</td>
+                    <td>{{ atleta.telefone or "Não informado" }}</td>
                     <td>{{ atleta.sexo }}</td>
                     <td>{{ atleta.nivel.nome }}</td>
                     <td>{{ "Sim" if atleta.residente_eldorado else "Não" }}</td>

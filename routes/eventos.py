@@ -1,18 +1,22 @@
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+
 from extensions import db
 from models import Evento
+from utils import admin_required
 
 eventos_bp = Blueprint("eventos", __name__)
 
 
 @eventos_bp.route("/eventos")
+@admin_required
 def listar_eventos():
     eventos = Evento.query.all()
     return render_template("eventos.html", eventos=eventos)
 
 
 @eventos_bp.route("/eventos/novo", methods=["GET", "POST"])
+@admin_required
 def cadastrar_evento():
     if request.method == "POST":
         nome = request.form.get("nome")
@@ -43,11 +47,8 @@ def cadastrar_evento():
     return render_template("novo_evento.html")
 
 
-
-
-
-
 @eventos_bp.route("/eventos/editar/<int:evento_id>", methods=["GET", "POST"])
+@admin_required
 def editar_evento(evento_id):
     evento = Evento.query.get_or_404(evento_id)
 
@@ -77,9 +78,8 @@ def editar_evento(evento_id):
     return render_template("editar_evento.html", evento=evento)
 
 
-
-
 @eventos_bp.route("/eventos/excluir/<int:evento_id>", methods=["POST"])
+@admin_required
 def excluir_evento(evento_id):
     evento = Evento.query.get_or_404(evento_id)
 

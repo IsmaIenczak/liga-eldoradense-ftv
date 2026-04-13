@@ -1,17 +1,21 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+
 from extensions import db
 from models import Nivel, Atleta, Categoria
+from utils import admin_required
 
 niveis_bp = Blueprint("niveis", __name__)
 
 
 @niveis_bp.route("/niveis")
+@admin_required
 def listar_niveis():
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
     return render_template("niveis.html", niveis=niveis)
 
 
 @niveis_bp.route("/niveis/novo", methods=["GET", "POST"])
+@admin_required
 def novo_nivel():
     if request.method == "POST":
         nome = request.form.get("nome")
@@ -38,6 +42,7 @@ def novo_nivel():
 
 
 @niveis_bp.route("/niveis/editar/<int:nivel_id>", methods=["GET", "POST"])
+@admin_required
 def editar_nivel(nivel_id):
     nivel = Nivel.query.get_or_404(nivel_id)
 
@@ -68,6 +73,7 @@ def editar_nivel(nivel_id):
 
 
 @niveis_bp.route("/niveis/excluir/<int:nivel_id>", methods=["POST"])
+@admin_required
 def excluir_nivel(nivel_id):
     nivel = Nivel.query.get_or_404(nivel_id)
 

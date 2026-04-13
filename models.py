@@ -21,6 +21,7 @@ class Atleta(db.Model):
 
     residente_eldorado = db.Column(db.Boolean, nullable=False, default=False)
     nivel_validado = db.Column(db.Boolean, nullable=False, default=False)
+    telefone = db.Column(db.String(20), nullable=True)
 
     def __repr__(self):
         return f"<Atleta {self.nome}>"
@@ -64,10 +65,12 @@ class Inscricao(db.Model):
     atleta1_id = db.Column(db.Integer, db.ForeignKey("atleta.id"), nullable=False)
     atleta2_id = db.Column(db.Integer, db.ForeignKey("atleta.id"), nullable=False)
     categoria_id = db.Column(db.Integer, db.ForeignKey("categoria.id"), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="confirmada")
 
     atleta1 = db.relationship("Atleta", foreign_keys=[atleta1_id])
     atleta2 = db.relationship("Atleta", foreign_keys=[atleta2_id])
     categoria = db.relationship("Categoria", backref="inscricoes")
+
 
     def __repr__(self):
         return f"<Inscricao {self.id}>"
