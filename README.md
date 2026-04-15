@@ -177,4 +177,4 @@ Password: Admin@Liga2026!
 
 ## 👨‍💻 Author
 
-**Ismael Lenczak**
+**Ismael Ienczak**
