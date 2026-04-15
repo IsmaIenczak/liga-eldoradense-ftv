@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Primeiro acesso</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color: {% if category == 'error' %}red{% else %}green{% endif %};">
+        {{ message }}
+      </p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% if etapa == "buscar" %}
+    <form method="POST">
+        <input type="hidden" name="etapa" value="buscar">
+
+        <label for="cpf">CPF:</label>
+        <input type="text" id="cpf" name="cpf" required>
+
+        <br><br>
+
+        <button type="submit">Continuar</button>
+    </form>
+
+{% elif etapa == "completar" %}
+    <p><strong>Nome:</strong> {{ atleta.nome }}</p>
+    <p><strong>CPF:</strong> {{ atleta.cpf }}</p>
+    <p><strong>Nível:</strong> {{ atleta.nivel.nome if atleta.nivel else "Não definido" }}</p>
+    <p><strong>Sexo:</strong> {{ atleta.sexo }}</p>
+
+    <p>
+        Caso algum dado acima esteja divergente, entre em contato com a administração do evento.
+    </p>
+
+    <form method="POST">
+        <input type="hidden" name="etapa" value="completar">
+        <input type="hidden" name="atleta_id" value="{{ atleta.id }}">
+
+        <label for="telefone">Telefone (WhatsApp):</label>
+        <input type="text" id="telefone" name="telefone" value="{{ atleta.telefone or '' }}">
+
+        <br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <br><br>
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required>
+
+        <br><br>
+
+        <label for="confirmar_senha">Confirmar senha:</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+
+        <br><br>
+
+        <p>
+            A senha deve ter pelo menos 8 caracteres, incluindo 1 letra maiúscula, 1 número e 1 caractere especial.
+        </p>
+
+        <button type="submit">Concluir primeiro acesso</button>
+    </form>
+{% endif %}
+
+<p style="margin-top: 15px;">
+    Já possui conta? <a href="{{ url_for('auth.login') }}">Entrar</a>
+</p>
+{% endblock %}

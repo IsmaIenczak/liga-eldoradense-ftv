@@ -6,6 +6,7 @@
 <p>Bem-vindo, {{ atleta.nome }}!</p>
 
 <p><strong>Telefone:</strong> {{ atleta.telefone or "Não informado" }}</p>
+<p><strong>Email:</strong> {{ atleta.usuario.email if atleta.usuario else "Não informado" }}</p>
 <p><strong>CPF:</strong> {{ atleta.cpf }}</p>
 <p><strong>Sexo:</strong> {{ atleta.sexo }}</p>
 <p><strong>Nível:</strong> {{ atleta.nivel.nome if atleta and atleta.nivel else "Não definido" }}</p>

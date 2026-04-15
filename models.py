@@ -1,5 +1,6 @@
 from extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import backref
 
 
 class Nivel(db.Model):
@@ -86,7 +87,11 @@ class Usuario(db.Model):
     tipo = db.Column(db.String(20), nullable=False, default="atleta")
 
     atleta_id = db.Column(db.Integer, db.ForeignKey("atleta.id"), nullable=True, unique=True)
-    atleta = db.relationship("Atleta", backref="usuario", uselist=False)
+
+    atleta = db.relationship(
+        "Atleta",
+        backref=backref("usuario", uselist=False)
+    )
 
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)

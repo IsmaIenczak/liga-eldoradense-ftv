@@ -121,6 +121,91 @@ def cadastro_atleta():
     return render_template("cadastro_atleta.html", niveis=niveis)
 
 
+
+    
+@auth_bp.route("/primeiro-acesso", methods=["GET", "POST"])
+def primeiro_acesso():
+    if request.method == "POST":
+        etapa = request.form.get("etapa")
+
+        if etapa == "buscar":
+            cpf = request.form.get("cpf")
+
+            if not cpf or not cpf.isdigit() or len(cpf) != 11:
+                flash("Informe um CPF válido com 11 números.", "error")
+                return redirect(url_for("auth.primeiro_acesso"))
+
+            atleta = Atleta.query.filter_by(cpf=cpf).first()
+
+            if not atleta:
+                flash("Nenhum atleta cadastrado foi encontrado com esse CPF.", "error")
+                return redirect(url_for("auth.primeiro_acesso"))
+
+            if atleta.usuario:
+                flash("Este atleta já possui conta de acesso. Faça login.", "error")
+                return redirect(url_for("auth.login"))
+
+            return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
+
+        elif etapa == "completar":
+            atleta_id = request.form.get("atleta_id")
+            telefone = request.form.get("telefone")
+            email = request.form.get("email")
+            senha = request.form.get("senha")
+            confirmar_senha = request.form.get("confirmar_senha")
+
+            atleta = Atleta.query.get(atleta_id)
+
+            if not atleta:
+                flash("Atleta não encontrado.", "error")
+                return redirect(url_for("auth.primeiro_acesso"))
+
+            if atleta.usuario:
+                flash("Este atleta já possui conta de acesso. Faça login.", "error")
+                return redirect(url_for("auth.login"))
+
+            if not email or not email.strip():
+                flash("Informe um email válido.", "error")
+                return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
+
+            usuario_existente_email = Usuario.query.filter_by(email=email.strip()).first()
+            if usuario_existente_email:
+                flash("Já existe um usuário cadastrado com esse email.", "error")
+                return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
+
+            if not senha_forte(senha):
+                flash(
+                    "A senha deve ter pelo menos 8 caracteres, incluindo 1 letra maiúscula, 1 número e 1 caractere especial.",
+                    "error"
+                )
+                return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
+
+            if senha != confirmar_senha:
+                flash("A confirmação de senha não confere.", "error")
+                return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
+
+            atleta.telefone = telefone
+
+            usuario = Usuario(
+                email=email.strip(),
+                tipo="atleta",
+                atleta_id=atleta.id
+            )
+            usuario.set_senha(senha)
+
+            db.session.add(usuario)
+            db.session.commit()
+
+            flash("Primeiro acesso concluído com sucesso! Agora faça login.", "success")
+            return redirect(url_for("auth.login"))
+
+    return render_template("primeiro_acesso.html", etapa="buscar")
+
+
+
+
+
+
 @auth_bp.route("/logout")
 def logout():
     session.clear()

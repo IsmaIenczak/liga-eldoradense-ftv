@@ -15,7 +15,7 @@ def nova_categoria():
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
-        modalidade = request.form.get("modalidade")
+        modalidade = request.form.get("modalidade", "").strip().lower()
         nivel_id = int(request.form.get("nivel"))
         evento_id = request.form.get("evento")
         vagas = request.form.get("vagas")
@@ -94,7 +94,7 @@ def editar_categoria(categoria_id):
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
-        nova_modalidade = request.form.get("modalidade")
+        nova_modalidade = request.form.get("modalidade", "").strip().lower()
         novo_nivel_id = int(request.form.get("nivel"))
         novo_evento_id = int(request.form.get("evento"))
         novas_vagas = request.form.get("vagas")

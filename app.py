@@ -25,7 +25,7 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 
 @app.before_request
 def proteger_rotas():
-    rotas_livres = ["auth.login", "auth.cadastro_atleta", "static"]
+    rotas_livres = ["auth.login", "auth.cadastro_atleta", "auth.primeiro_acesso", "static"]
 
     if request.endpoint is None:
         return
