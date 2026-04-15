@@ -12,6 +12,7 @@
                 <th>Evento</th>
                 <th>Categoria</th>
                 <th>Parceiro</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -24,6 +25,19 @@
                             {{ inscricao.atleta2.nome }}
                         {% else %}
                             {{ inscricao.atleta1.nome }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if inscricao.status == "confirmada" %}
+                            Confirmada
+                        {% elif inscricao.status == "pendente_parceiro" %}
+                            Pendente de parceiro
+                        {% elif inscricao.status == "pendente_pagamento" %}
+                            Pendente de pagamento
+                        {% elif inscricao.status == "cancelada" %}
+                            Cancelada
+                        {% else %}
+                            {{ inscricao.status }}
                         {% endif %}
                     </td>
                 </tr>

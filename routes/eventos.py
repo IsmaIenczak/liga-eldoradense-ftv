@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from extensions import db
@@ -29,6 +29,10 @@ def cadastrar_evento():
 
         data = datetime.strptime(data_str, "%Y-%m-%d").date()
 
+        if data < date.today():
+            flash("A data do evento não pode estar no passado.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
         novo_evento = Evento(
             nome=nome,
             data=data,
@@ -42,9 +46,12 @@ def cadastrar_evento():
         db.session.add(novo_evento)
         db.session.commit()
 
+        flash("Evento criado com sucesso!", "success")
         return redirect(url_for("eventos.listar_eventos"))
 
     return render_template("novo_evento.html")
+
+
 
 
 @eventos_bp.route("/eventos/editar/<int:evento_id>", methods=["GET", "POST"])
@@ -63,6 +70,10 @@ def editar_evento(evento_id):
 
         data = datetime.strptime(data_str, "%Y-%m-%d").date()
 
+        if data < date.today():
+            flash("A data do evento não pode estar no passado.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
         evento.nome = nome
         evento.data = data
         evento.arena = arena
@@ -73,9 +84,12 @@ def editar_evento(evento_id):
 
         db.session.commit()
 
+        flash("Evento atualizado com sucesso!", "success")
         return redirect(url_for("eventos.listar_eventos"))
 
     return render_template("editar_evento.html", evento=evento)
+
+
 
 
 @eventos_bp.route("/eventos/excluir/<int:evento_id>", methods=["POST"])

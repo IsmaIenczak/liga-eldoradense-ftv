@@ -23,6 +23,7 @@ class Atleta(db.Model):
     nivel_validado = db.Column(db.Boolean, nullable=False, default=False)
     telefone = db.Column(db.String(20), nullable=True)
 
+
     def __repr__(self):
         return f"<Atleta {self.nome}>"
 

@@ -5,6 +5,8 @@ from extensions import db
 from models import Atleta, Evento, Categoria, Inscricao, Usuario
 from routes.niveis import niveis_bp
 from datetime import timedelta
+from flask_migrate import Migrate
+
 
 
 
@@ -17,6 +19,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///liga.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 app.permanent_session_lifetime = timedelta(minutes=30)
 
@@ -89,8 +92,6 @@ app.register_blueprint(auth_bp)
 
 
 with app.app_context():
-    db.create_all()
-
     admin_existente = Usuario.query.filter_by(email="admin@admin.com").first()
 
     if not admin_existente:

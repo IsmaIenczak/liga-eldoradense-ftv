@@ -1,6 +1,6 @@
+import re
 from functools import wraps
 from flask import session, redirect, url_for, flash
-import re
 
 
 def admin_required(view_func):
@@ -13,8 +13,6 @@ def admin_required(view_func):
         return view_func(*args, **kwargs)
 
     return wrapped_view
-
-
 
 
 def senha_forte(senha):

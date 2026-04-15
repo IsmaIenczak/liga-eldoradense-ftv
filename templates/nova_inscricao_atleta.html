@@ -39,12 +39,14 @@
 
     <br><br>
 
+    <p>Parceiros com “⚠️ nível pendente” ainda não tiveram o nível validado pela organização.</p>
+    
     <label for="parceiro">Parceiro:</label>
     <select id="parceiro" name="parceiro" required>
         <option value="">Selecione</option>
         {% for atleta in atletas %}
             <option value="{{ atleta.id }}">
-                {{ atleta.nome }} - {{ atleta.nivel.nome }}
+                {{ atleta.nome }} - {{ atleta.nivel.nome }}{% if not atleta.nivel_validado %} - ⚠️ nível pendente{% endif %}
             </option>
         {% endfor %}
     </select>

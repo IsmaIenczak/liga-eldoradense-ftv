@@ -1,25 +1,9 @@
-import re
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models import Usuario, Atleta, Nivel
 from extensions import db
+from utils import senha_forte
 
 auth_bp = Blueprint("auth", __name__)
-
-
-def senha_forte(senha):
-    if len(senha) < 8:
-        return False
-
-    if not re.search(r"[A-Z]", senha):
-        return False
-
-    if not re.search(r"[0-9]", senha):
-        return False
-
-    if not re.search(r"[^A-Za-z0-9]", senha):
-        return False
-
-    return True
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
