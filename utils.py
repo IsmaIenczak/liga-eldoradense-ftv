@@ -60,3 +60,32 @@ def formatar_telefone(telefone):
         return f"({telefone_limpo[:2]}) {telefone_limpo[2:6]}-{telefone_limpo[6:]}"
 
     return telefone
+
+
+def normalizar_cpf(cpf):
+    if not cpf:
+        return None
+
+    cpf = cpf.strip()
+
+    if re.search(r"[A-Za-z]", cpf):
+        return None
+
+    cpf_limpo = re.sub(r"\D", "", cpf)
+
+    if len(cpf_limpo) != 11:
+        return None
+
+    return cpf_limpo
+
+
+def formatar_cpf(cpf):
+    if not cpf:
+        return "Não informado"
+
+    cpf_limpo = re.sub(r"\D", "", cpf)
+
+    if len(cpf_limpo) == 11:
+        return f"{cpf_limpo[:3]}.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-{cpf_limpo[9:]}"
+
+    return cpf

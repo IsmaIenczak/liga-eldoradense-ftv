@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import mostrar_telefone %}
+{% from "macros.html" import mostrar_telefone, mostrar_cpf %}
 
 {% block content %}
 <h2>
@@ -46,7 +46,7 @@
             {% for atleta in atletas %}
                 <tr>
                     <td>{{ atleta.nome }}</td>
-                    <td>{{ atleta.cpf }}</td>
+                    <td>{{ mostrar_cpf(atleta.cpf) }}</td>
                     <td>{{ mostrar_telefone(atleta.telefone) }}</td>
                     <td>{{ atleta.usuario.email if atleta.usuario else "Não informado" }}</td>
                     <td>{{ atleta.sexo }}</td>

@@ -27,3 +27,17 @@
         {{ status }}
     {% endif %}
 {% endmacro %}
+
+
+{% macro mostrar_cpf(cpf) %}
+    {% if cpf %}
+        {% set c = cpf|replace(".", "")|replace("-", "")|replace(" ", "") %}
+        {% if c|length == 11 %}
+            {{ c[0:3] }}.{{ c[3:6] }}.{{ c[6:9] }}-{{ c[9:11] }}
+        {% else %}
+            {{ cpf }}
+        {% endif %}
+    {% else %}
+        Não informado
+    {% endif %}
+{% endmacro %}

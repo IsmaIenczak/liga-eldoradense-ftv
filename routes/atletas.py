@@ -3,7 +3,7 @@ from sqlalchemy import or_
 
 from extensions import db
 from models import Atleta, Inscricao, Nivel
-from utils import admin_required, normalizar_telefone
+from utils import admin_required, normalizar_telefone, normalizar_cpf
 
 atletas_bp = Blueprint("atletas", __name__)
 
@@ -36,7 +36,15 @@ def cadastrar_atleta():
 
     if request.method == "POST":
         nome = request.form.get("nome")
-        cpf = request.form.get("cpf")
+        cpf = normalizar_cpf(request.form.get("cpf"))
+
+        if cpf is None:
+            return render_template(
+                "novo_atleta.html",
+                erro="CPF deve conter exatamente 11 números válidos.",
+                niveis=niveis
+            )
+        
 
         telefone = normalizar_telefone(request.form.get("telefone"))
 
@@ -53,13 +61,7 @@ def cadastrar_atleta():
 
         residente_eldorado = True if residente_eldorado == "sim" else False
 
-        if not cpf.isdigit() or len(cpf) != 11:
-            return render_template(
-                "novo_atleta.html",
-                erro="CPF deve conter exatamente 11 números.",
-                niveis=niveis
-            )
-
+    
         cpf_existente = Atleta.query.filter_by(cpf=cpf).first()
         if cpf_existente:
             return render_template(
@@ -125,7 +127,11 @@ def editar_atleta(atleta_id):
 
     if request.method == "POST":
         novo_nome = request.form.get("nome")
-        novo_cpf = request.form.get("cpf")
+
+        novo_cpf = normalizar_cpf(request.form.get("cpf"))
+        if novo_cpf is None:
+            flash("CPF deve conter exatamente 11 números válidos.", "error")
+            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
         
         novo_telefone = normalizar_telefone(request.form.get("telefone"))
 
@@ -138,9 +144,6 @@ def editar_atleta(atleta_id):
         novo_residente_eldorado = request.form.get("residente_eldorado")
         novo_residente_eldorado = True if novo_residente_eldorado == "sim" else False
 
-        if not novo_cpf.isdigit() or len(novo_cpf) != 11:
-            flash("CPF deve conter exatamente 11 números.", "error")
-            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
 
         cpf_existente = Atleta.query.filter_by(cpf=novo_cpf).first()
         if cpf_existente and cpf_existente.id != atleta.id:

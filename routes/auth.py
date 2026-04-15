@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models import Usuario, Atleta, Nivel
 from extensions import db
-from utils import senha_forte, normalizar_telefone
+from utils import senha_forte, normalizar_telefone, normalizar_cpf
+
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -36,7 +37,12 @@ def cadastro_atleta():
 
     if request.method == "POST":
         nome = request.form.get("nome")
-        cpf = request.form.get("cpf")
+
+        cpf = normalizar_cpf(request.form.get("cpf"))
+        if cpf is None:
+            flash("Informe um CPF válido com 11 números.", "error")
+            return redirect(url_for("auth.cadastro_atleta"))
+
         telefone = request.form.get("telefone")
         telefone = normalizar_telefone(telefone)
         sexo = request.form.get("sexo")
@@ -133,7 +139,11 @@ def primeiro_acesso():
         etapa = request.form.get("etapa")
 
         if etapa == "buscar":
-            cpf = request.form.get("cpf")
+            
+            cpf = normalizar_cpf(request.form.get("cpf"))
+            if cpf is None:
+                flash("Informe um CPF válido com 11 números.", "error")
+                return redirect(url_for("auth.primeiro_acesso"))
 
             if not cpf or not cpf.isdigit() or len(cpf) != 11:
                 flash("Informe um CPF válido com 11 números.", "error")
