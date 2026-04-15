@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros.html" import mostrar_status_inscricao %}
 
 {% block content %}
 <h2>Inscrições</h2>
@@ -32,19 +33,7 @@
                     <td>{{ inscricao.categoria.nome }}</td>
                     <td>{{ inscricao.atleta1.nome }}</td>
                     <td>{{ inscricao.atleta2.nome }}</td>
-                    <td>
-                        {% if inscricao.status == "confirmada" %}
-                            Confirmada
-                        {% elif inscricao.status == "pendente_parceiro" %}
-                            Pendente de parceiro
-                        {% elif inscricao.status == "pendente_pagamento" %}
-                            Pendente de pagamento
-                        {% elif inscricao.status == "cancelada" %}
-                            Cancelada
-                        {% else %}
-                            {{ inscricao.status }}
-                        {% endif %}
-                    </td>
+                    <td>{{ mostrar_status_inscricao(inscricao.status) }}</td>
                     <td>
                         <form action="{{ url_for('inscricoes.excluir_inscricao', inscricao_id=inscricao.id) }}" method="POST" style="display:inline;">
                             <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta inscrição?')">

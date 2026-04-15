@@ -1,15 +1,17 @@
 {% extends "base.html" %}
+{% from "macros.html" import mostrar_telefone %}
 
 {% block content %}
 <h2>Área do Atleta</h2>
 
 <p>Bem-vindo, {{ atleta.nome }}!</p>
 
-<p><strong>Telefone:</strong> {{ atleta.telefone or "Não informado" }}</p>
+<p><strong>Telefone:</strong> {{ mostrar_telefone(atleta.telefone) }}</p>
 <p><strong>Email:</strong> {{ atleta.usuario.email if atleta.usuario else "Não informado" }}</p>
 <p><strong>CPF:</strong> {{ atleta.cpf }}</p>
 <p><strong>Sexo:</strong> {{ atleta.sexo }}</p>
 <p><strong>Nível:</strong> {{ atleta.nivel.nome if atleta and atleta.nivel else "Não definido" }}</p>
 <p><strong>Residente em Eldorado do Sul:</strong> {{ "Sim" if atleta.residente_eldorado else "Não" }}</p>
 <p><strong>Nível validado:</strong> {{ "Sim" if atleta.nivel_validado else "Não" }}</p>
+<p><a href="{{ url_for('auth.meu_perfil') }}">Editar telefone e email</a></p>
 {% endblock %}

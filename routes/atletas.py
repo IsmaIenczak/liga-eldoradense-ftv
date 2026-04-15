@@ -3,7 +3,7 @@ from sqlalchemy import or_
 
 from extensions import db
 from models import Atleta, Inscricao, Nivel
-from utils import admin_required
+from utils import admin_required, normalizar_telefone
 
 atletas_bp = Blueprint("atletas", __name__)
 
@@ -37,7 +37,16 @@ def cadastrar_atleta():
     if request.method == "POST":
         nome = request.form.get("nome")
         cpf = request.form.get("cpf")
-        telefone = request.form.get("telefone")
+
+        telefone = normalizar_telefone(request.form.get("telefone"))
+
+        if telefone is None:
+            return render_template(
+                "novo_atleta.html",
+                erro="Informe um telefone válido com DDD.",
+                niveis=niveis
+            )
+        
         sexo = request.form.get("sexo")
         nivel_id = request.form.get("nivel")
         residente_eldorado = request.form.get("residente_eldorado")
@@ -117,7 +126,13 @@ def editar_atleta(atleta_id):
     if request.method == "POST":
         novo_nome = request.form.get("nome")
         novo_cpf = request.form.get("cpf")
-        novo_telefone = request.form.get("telefone")
+        
+        novo_telefone = normalizar_telefone(request.form.get("telefone"))
+
+        if novo_telefone is None:
+            flash("Informe um telefone válido com DDD.", "error")
+            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
+
         novo_sexo = request.form.get("sexo")
         novo_nivel_id = int(request.form.get("nivel"))
         novo_residente_eldorado = request.form.get("residente_eldorado")

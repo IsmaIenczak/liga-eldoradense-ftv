@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models import Usuario, Atleta, Nivel
 from extensions import db
-from utils import senha_forte
+from utils import senha_forte, normalizar_telefone
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -38,7 +38,11 @@ def cadastro_atleta():
         nome = request.form.get("nome")
         cpf = request.form.get("cpf")
         telefone = request.form.get("telefone")
+        telefone = normalizar_telefone(telefone)
         sexo = request.form.get("sexo")
+        if telefone is None:
+            flash("Informe um telefone válido com DDD.", "error")
+            return redirect(url_for("auth.cadastro_atleta"))
         nivel_id = request.form.get("nivel")
         residente_eldorado = request.form.get("residente_eldorado")
         email = request.form.get("email")
@@ -149,7 +153,10 @@ def primeiro_acesso():
 
         elif etapa == "completar":
             atleta_id = request.form.get("atleta_id")
-            telefone = request.form.get("telefone")
+            telefone = normalizar_telefone(request.form.get("telefone"))
+            if telefone is None:
+                flash("Informe um telefone válido com DDD.", "error")
+                return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
             email = request.form.get("email")
             senha = request.form.get("senha")
             confirmar_senha = request.form.get("confirmar_senha")
@@ -203,7 +210,47 @@ def primeiro_acesso():
 
 
 
+@auth_bp.route("/meu-perfil", methods=["GET", "POST"])
+def meu_perfil():
+    if session.get("usuario_tipo") != "atleta":
+        flash("Acesso permitido apenas para atletas.", "error")
+        return redirect(url_for("home"))
 
+    atleta_id = session.get("atleta_id")
+    if not atleta_id:
+        return redirect(url_for("auth.logout"))
+
+    atleta = Atleta.query.get(atleta_id)
+    if not atleta or not atleta.usuario:
+        return redirect(url_for("auth.logout"))
+
+    if request.method == "POST":
+        telefone = normalizar_telefone(request.form.get("telefone"))
+        if telefone is None:
+            flash("Informe um telefone válido com DDD.", "error")
+            return redirect(url_for("auth.meu_perfil"))
+        email = request.form.get("email")
+
+        if not email or not email.strip():
+            flash("Informe um email válido.", "error")
+            return redirect(url_for("auth.meu_perfil"))
+
+        email = email.strip()
+
+        usuario_existente = Usuario.query.filter_by(email=email).first()
+        if usuario_existente and usuario_existente.id != atleta.usuario.id:
+            flash("Já existe outro usuário cadastrado com esse email.", "error")
+            return redirect(url_for("auth.meu_perfil"))
+
+        atleta.telefone = telefone
+        atleta.usuario.email = email
+
+        db.session.commit()
+
+        flash("Perfil atualizado com sucesso!", "success")
+        return redirect(url_for("auth.meu_perfil"))
+
+    return render_template("meu_perfil.html", atleta=atleta)
 
 
 @auth_bp.route("/logout")

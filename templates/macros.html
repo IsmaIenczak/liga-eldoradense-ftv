@@ -1,0 +1,29 @@
+{% macro mostrar_telefone(telefone) %}
+    {% if telefone %}
+        {% set t = telefone|replace(" ", "")|replace("(", "")|replace(")", "")|replace("-", "") %}
+        {% if t|length == 11 %}
+            ({{ t[0:2] }}) {{ t[2:7] }}-{{ t[7:11] }}
+        {% elif t|length == 10 %}
+            ({{ t[0:2] }}) {{ t[2:6] }}-{{ t[6:10] }}
+        {% else %}
+            {{ telefone }}
+        {% endif %}
+    {% else %}
+        Não informado
+    {% endif %}
+{% endmacro %}
+
+
+{% macro mostrar_status_inscricao(status) %}
+    {% if status == "confirmada" %}
+        Confirmada
+    {% elif status == "pendente_parceiro" %}
+        Pendente de parceiro
+    {% elif status == "pendente_pagamento" %}
+        Pendente de pagamento
+    {% elif status == "cancelada" %}
+        Cancelada
+    {% else %}
+        {{ status }}
+    {% endif %}
+{% endmacro %}

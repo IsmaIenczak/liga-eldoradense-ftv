@@ -103,3 +103,20 @@ class Usuario(db.Model):
         return f"<Usuario {self.email}>"
     
 
+
+class ConviteParceiro(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    atleta_origem_id = db.Column(db.Integer, db.ForeignKey("atleta.id"), nullable=False)
+    categoria_id = db.Column(db.Integer, db.ForeignKey("categoria.id"), nullable=False)
+
+    nome_parceiro = db.Column(db.String(100), nullable=False)
+    telefone_parceiro = db.Column(db.String(20), nullable=False)
+
+    status = db.Column(db.String(30), nullable=False, default="pendente_parceiro")
+
+    atleta_origem = db.relationship("Atleta", foreign_keys=[atleta_origem_id])
+    categoria = db.relationship("Categoria")
+
+    def __repr__(self):
+        return f"<ConviteParceiro {self.id}>"

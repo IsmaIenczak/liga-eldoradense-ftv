@@ -40,8 +40,16 @@
         <input type="hidden" name="atleta_id" value="{{ atleta.id }}">
 
         <label for="telefone">Telefone (WhatsApp):</label>
-        <input type="text" id="telefone" name="telefone" value="{{ atleta.telefone or '' }}">
-
+        <input
+            type="text"
+            id="telefone"
+            name="telefone"
+            value="{{ atleta.telefone or '' }}"
+            inputmode="numeric"
+            maxlength="15"
+            placeholder="(51) 99999-9999"
+        >
+        
         <br><br>
 
         <label for="email">Email:</label>

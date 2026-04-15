@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "macros.html" import mostrar_telefone %}
+
+{% block content %}
+<h2>Meu Perfil</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color: {% if category == 'error' %}red{% else %}green{% endif %};">
+        {{ message }}
+      </p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<p><strong>Nome:</strong> {{ atleta.nome }}</p>
+<p><strong>CPF:</strong> {{ atleta.cpf }}</p>
+<p><strong>Sexo:</strong> {{ atleta.sexo }}</p>
+<p><strong>Nível:</strong> {{ atleta.nivel.nome if atleta.nivel else "Não definido" }}</p>
+<p><strong>Residente em Eldorado do Sul:</strong> {{ "Sim" if atleta.residente_eldorado else "Não" }}</p>
+<p><strong>Nível validado:</strong> {{ "Sim" if atleta.nivel_validado else "Não" }}</p>
+
+<p>
+    Caso algum dado cadastral acima esteja divergente, entre em contato com a administração do evento.
+</p>
+
+<form method="POST">
+    <label for="telefone">Telefone (WhatsApp):</label>
+    <input
+        type="text"
+        id="telefone"
+        name="telefone"
+        value="{{ atleta.telefone or '' }}"
+        inputmode="numeric"
+        maxlength="15"
+        placeholder="(51) 99999-9999"
+    >
+
+    <br><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" value="{{ atleta.usuario.email if atleta.usuario else '' }}" required>
+
+    <br><br>
+
+    <button type="submit">Salvar alterações</button>
+</form>
+{% endblock %}

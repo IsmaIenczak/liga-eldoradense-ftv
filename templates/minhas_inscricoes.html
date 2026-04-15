@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros.html" import mostrar_status_inscricao %}
 
 {% block content %}
 <h2>Minhas Inscrições</h2>
@@ -27,19 +28,7 @@
                             {{ inscricao.atleta1.nome }}
                         {% endif %}
                     </td>
-                    <td>
-                        {% if inscricao.status == "confirmada" %}
-                            Confirmada
-                        {% elif inscricao.status == "pendente_parceiro" %}
-                            Pendente de parceiro
-                        {% elif inscricao.status == "pendente_pagamento" %}
-                            Pendente de pagamento
-                        {% elif inscricao.status == "cancelada" %}
-                            Cancelada
-                        {% else %}
-                            {{ inscricao.status }}
-                        {% endif %}
-                    </td>
+                    <td>{{ mostrar_status_inscricao(inscricao.status) }}</td>
                 </tr>
             {% endfor %}
         </tbody>

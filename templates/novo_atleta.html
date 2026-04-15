@@ -22,8 +22,16 @@
     <input type="text" name="cpf" required><br><br>
 
     <label for="telefone">Telefone (WhatsApp):</label>
-    <input type="text" id="telefone" name="telefone"><br><br>
-    
+    <input
+        type="text"
+        id="telefone"
+        name="telefone"
+        inputmode="numeric"
+        maxlength="15"
+        placeholder="(51) 99999-9999"
+    >
+
+    <br><br>
 
     <label>Sexo:</label>
     <select name="sexo" required>
