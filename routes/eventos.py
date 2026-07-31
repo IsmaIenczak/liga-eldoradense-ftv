@@ -3,7 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from extensions import db
 from models import Evento
-from utils import admin_required
+from utils import admin_required, normalizar_cep
+
 
 eventos_bp = Blueprint("eventos", __name__)
 
@@ -25,20 +26,55 @@ def cadastrar_evento():
         rua = request.form.get("rua")
         cidade = request.form.get("cidade")
         cep = request.form.get("cep")
-        numero = request.form.get("numero")
+        numero_raw = request.form.get("numero")
 
-        data = datetime.strptime(data_str, "%Y-%m-%d").date()
+        if not nome or not nome.strip():
+            flash("Informe um nome válido para o evento.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
+        if not data_str:
+            flash("Informe uma data válida para o evento.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
+        try:
+            data = datetime.strptime(data_str, "%Y-%m-%d").date()
+        except ValueError:
+            flash("A data do evento deve estar no formato YYYY-MM-DD.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
 
         if data < date.today():
             flash("A data do evento não pode estar no passado.", "error")
             return redirect(url_for("eventos.cadastrar_evento"))
 
+        if not arena or not arena.strip():
+            flash("Informe a arena do evento.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
+        if not rua or not rua.strip():
+            flash("Informe a rua do evento.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
+        if not cidade or not cidade.strip():
+            flash("Informe a cidade do evento.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
+        cep = normalizar_cep(cep)
+        if cep is None:
+            flash("Informe um CEP válido com 8 dígitos.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
+        try:
+            numero = int(numero_raw)
+        except (TypeError, ValueError):
+            flash("Informe um número de endereço válido.", "error")
+            return redirect(url_for("eventos.cadastrar_evento"))
+
         novo_evento = Evento(
-            nome=nome,
+            nome=nome.strip(),
             data=data,
-            arena=arena,
-            rua=rua,
-            cidade=cidade,
+            arena=arena.strip(),
+            rua=rua.strip(),
+            cidade=cidade.strip(),
             cep=cep,
             numero=numero
         )
@@ -50,8 +86,6 @@ def cadastrar_evento():
         return redirect(url_for("eventos.listar_eventos"))
 
     return render_template("novo_evento.html")
-
-
 
 
 @eventos_bp.route("/eventos/editar/<int:evento_id>", methods=["GET", "POST"])
@@ -66,19 +100,54 @@ def editar_evento(evento_id):
         rua = request.form.get("rua")
         cidade = request.form.get("cidade")
         cep = request.form.get("cep")
-        numero = request.form.get("numero")
+        numero_raw = request.form.get("numero")
 
-        data = datetime.strptime(data_str, "%Y-%m-%d").date()
+        if not nome or not nome.strip():
+            flash("Informe um nome válido para o evento.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
+        if not data_str:
+            flash("Informe uma data válida para o evento.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
+        try:
+            data = datetime.strptime(data_str, "%Y-%m-%d").date()
+        except ValueError:
+            flash("A data do evento deve estar no formato YYYY-MM-DD.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
 
         if data < date.today():
             flash("A data do evento não pode estar no passado.", "error")
             return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
 
-        evento.nome = nome
+        if not arena or not arena.strip():
+            flash("Informe a arena do evento.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
+        if not rua or not rua.strip():
+            flash("Informe a rua do evento.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
+        if not cidade or not cidade.strip():
+            flash("Informe a cidade do evento.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
+        cep = normalizar_cep(cep)
+        if cep is None:
+            flash("Informe um CEP válido com 8 dígitos.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
+        try:
+            numero = int(numero_raw)
+        except (TypeError, ValueError):
+            flash("Informe um número de endereço válido.", "error")
+            return redirect(url_for("eventos.editar_evento", evento_id=evento_id))
+
+        evento.nome = nome.strip()
         evento.data = data
-        evento.arena = arena
-        evento.rua = rua
-        evento.cidade = cidade
+        evento.arena = arena.strip()
+        evento.rua = rua.strip()
+        evento.cidade = cidade.strip()
         evento.cep = cep
         evento.numero = numero
 
@@ -88,8 +157,6 @@ def editar_evento(evento_id):
         return redirect(url_for("eventos.listar_eventos"))
 
     return render_template("editar_evento.html", evento=evento)
-
-
 
 
 @eventos_bp.route("/eventos/excluir/<int:evento_id>", methods=["POST"])

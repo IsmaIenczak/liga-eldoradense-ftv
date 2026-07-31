@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models import Usuario, Atleta, Nivel
 from extensions import db
-from utils import senha_forte, normalizar_telefone, normalizar_cpf
+from utils import senha_forte, normalizar_telefone, normalizar_cpf, normalizar_email
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -10,10 +10,10 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email")
+        email = normalizar_email(request.form.get("email"))
         senha = request.form.get("senha")
 
-        usuario = Usuario.query.filter_by(email=email).first()
+        usuario = Usuario.query.filter_by(email=email).first() if email else None
 
         if not usuario or not usuario.check_senha(senha):
             flash("Email ou senha inválidos.", "error")
@@ -30,7 +30,6 @@ def login():
     return render_template("login.html")
 
 
-
 @auth_bp.route("/cadastro-atleta", methods=["GET", "POST"])
 def cadastro_atleta():
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
@@ -43,15 +42,15 @@ def cadastro_atleta():
             flash("Informe um CPF válido com 11 números.", "error")
             return redirect(url_for("auth.cadastro_atleta"))
 
-        telefone = request.form.get("telefone")
-        telefone = normalizar_telefone(telefone)
+        telefone = normalizar_telefone(request.form.get("telefone"))
         sexo = request.form.get("sexo")
         if telefone is None:
             flash("Informe um telefone válido com DDD.", "error")
             return redirect(url_for("auth.cadastro_atleta"))
-        nivel_id = request.form.get("nivel")
+
+        nivel_id_raw = request.form.get("nivel")
         residente_eldorado = request.form.get("residente_eldorado")
-        email = request.form.get("email")
+        email = normalizar_email(request.form.get("email"))
         senha = request.form.get("senha")
         confirmar_senha = request.form.get("confirmar_senha")
 
@@ -61,7 +60,7 @@ def cadastro_atleta():
             flash("Informe um CPF válido com 11 números.", "error")
             return redirect(url_for("auth.cadastro_atleta"))
 
-        if not email or not email.strip():
+        if not email:
             flash("Informe um email válido.", "error")
             return redirect(url_for("auth.cadastro_atleta"))
 
@@ -76,7 +75,7 @@ def cadastro_atleta():
             flash("A confirmação de senha não confere.", "error")
             return redirect(url_for("auth.cadastro_atleta"))
 
-        usuario_existente_email = Usuario.query.filter_by(email=email.strip()).first()
+        usuario_existente_email = Usuario.query.filter_by(email=email).first()
         if usuario_existente_email:
             flash("Já existe um usuário cadastrado com esse email.", "error")
             return redirect(url_for("auth.cadastro_atleta"))
@@ -88,6 +87,34 @@ def cadastro_atleta():
             if usuario_existente_atleta:
                 flash("Este atleta já possui uma conta de acesso cadastrada.", "error")
                 return redirect(url_for("auth.cadastro_atleta"))
+
+            if not nome or not nome.strip():
+                flash("Informe um nome válido.", "error")
+                return redirect(url_for("auth.cadastro_atleta"))
+
+            if sexo not in ["masculino", "feminino"]:
+                flash("Informe um sexo válido.", "error")
+                return redirect(url_for("auth.cadastro_atleta"))
+
+            if not nivel_id_raw:
+                flash("Selecione um nível.", "error")
+                return redirect(url_for("auth.cadastro_atleta"))
+
+            try:
+                nivel_id = int(nivel_id_raw)
+            except (ValueError, TypeError):
+                flash("Selecione um nível válido.", "error")
+                return redirect(url_for("auth.cadastro_atleta"))
+
+            if not Nivel.query.get(nivel_id):
+                flash("Selecione um nível válido.", "error")
+                return redirect(url_for("auth.cadastro_atleta"))
+
+            atleta.nome = nome.strip()
+            atleta.sexo = sexo
+            atleta.nivel_id = nivel_id
+            atleta.residente_eldorado = residente_eldorado
+            atleta.telefone = telefone
         else:
             if not nome or not nome.strip():
                 flash("Informe um nome válido.", "error")
@@ -97,26 +124,35 @@ def cadastro_atleta():
                 flash("Informe um sexo válido.", "error")
                 return redirect(url_for("auth.cadastro_atleta"))
 
-            if not nivel_id:
+            if not nivel_id_raw:
                 flash("Selecione um nível.", "error")
                 return redirect(url_for("auth.cadastro_atleta"))
 
+            try:
+                nivel_id = int(nivel_id_raw)
+            except (ValueError, TypeError):
+                flash("Selecione um nível válido.", "error")
+                return redirect(url_for("auth.cadastro_atleta"))
+
+            if not Nivel.query.get(nivel_id):
+                flash("Selecione um nível válido.", "error")
+                return redirect(url_for("auth.cadastro_atleta"))
 
             atleta = Atleta(
-            nome=nome.strip(),
-            cpf=cpf,
-            sexo=sexo,
-            nivel_id=int(nivel_id),
-            residente_eldorado=residente_eldorado,
-            nivel_validado=False,
-            telefone=telefone
+                nome=nome.strip(),
+                cpf=cpf,
+                sexo=sexo,
+                nivel_id=nivel_id,
+                residente_eldorado=residente_eldorado,
+                nivel_validado=False,
+                telefone=telefone
             )
 
             db.session.add(atleta)
             db.session.flush()
 
         usuario = Usuario(
-            email=email.strip(),
+            email=email,
             tipo="atleta",
             atleta_id=atleta.id
         )
@@ -131,15 +167,12 @@ def cadastro_atleta():
     return render_template("cadastro_atleta.html", niveis=niveis)
 
 
-
-    
 @auth_bp.route("/primeiro-acesso", methods=["GET", "POST"])
 def primeiro_acesso():
     if request.method == "POST":
         etapa = request.form.get("etapa")
 
         if etapa == "buscar":
-            
             cpf = normalizar_cpf(request.form.get("cpf"))
             if cpf is None:
                 flash("Informe um CPF válido com 11 números.", "error")
@@ -163,14 +196,6 @@ def primeiro_acesso():
 
         elif etapa == "completar":
             atleta_id = request.form.get("atleta_id")
-            telefone = normalizar_telefone(request.form.get("telefone"))
-            if telefone is None:
-                flash("Informe um telefone válido com DDD.", "error")
-                return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
-            email = request.form.get("email")
-            senha = request.form.get("senha")
-            confirmar_senha = request.form.get("confirmar_senha")
-
             atleta = Atleta.query.get(atleta_id)
 
             if not atleta:
@@ -181,11 +206,20 @@ def primeiro_acesso():
                 flash("Este atleta já possui conta de acesso. Faça login.", "error")
                 return redirect(url_for("auth.login"))
 
-            if not email or not email.strip():
+            telefone = normalizar_telefone(request.form.get("telefone"))
+            if telefone is None:
+                flash("Informe um telefone válido com DDD.", "error")
+                return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
+
+            email = normalizar_email(request.form.get("email"))
+            senha = request.form.get("senha")
+            confirmar_senha = request.form.get("confirmar_senha")
+
+            if not email:
                 flash("Informe um email válido.", "error")
                 return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
 
-            usuario_existente_email = Usuario.query.filter_by(email=email.strip()).first()
+            usuario_existente_email = Usuario.query.filter_by(email=email).first()
             if usuario_existente_email:
                 flash("Já existe um usuário cadastrado com esse email.", "error")
                 return render_template("primeiro_acesso.html", atleta=atleta, etapa="completar")
@@ -204,7 +238,7 @@ def primeiro_acesso():
             atleta.telefone = telefone
 
             usuario = Usuario(
-                email=email.strip(),
+                email=email,
                 tipo="atleta",
                 atleta_id=atleta.id
             )
@@ -217,7 +251,6 @@ def primeiro_acesso():
             return redirect(url_for("auth.login"))
 
     return render_template("primeiro_acesso.html", etapa="buscar")
-
 
 
 @auth_bp.route("/meu-perfil", methods=["GET", "POST"])
@@ -239,13 +272,12 @@ def meu_perfil():
         if telefone is None:
             flash("Informe um telefone válido com DDD.", "error")
             return redirect(url_for("auth.meu_perfil"))
-        email = request.form.get("email")
 
-        if not email or not email.strip():
+        email = normalizar_email(request.form.get("email"))
+
+        if not email:
             flash("Informe um email válido.", "error")
             return redirect(url_for("auth.meu_perfil"))
-
-        email = email.strip()
 
         usuario_existente = Usuario.query.filter_by(email=email).first()
         if usuario_existente and usuario_existente.id != atleta.usuario.id:

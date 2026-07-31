@@ -48,20 +48,34 @@ def nova_inscricao():
     selected_evento_id = request.args.get("evento")
     if selected_evento_id is None:
         selected_evento_id = str(eventos[0].id)
+    else:
+        try:
+            selected_evento_id = str(int(selected_evento_id))
+        except (TypeError, ValueError):
+            selected_evento_id = str(eventos[0].id)
 
     categorias = Categoria.query.filter_by(evento_id=int(selected_evento_id)).all()
 
     if request.method == "POST":
         evento_id = request.form.get("evento")
-        atleta1_id = request.form.get("atleta1")
-        atleta2_id = request.form.get("atleta2")
-        categoria_id = request.form.get("categoria")
+        atleta1_id_raw = request.form.get("atleta1")
+        atleta2_id_raw = request.form.get("atleta2")
+        categoria_id_raw = request.form.get("categoria")
+
+        try:
+            evento_id_int = int(evento_id)
+            atleta1_id = int(atleta1_id_raw)
+            atleta2_id = int(atleta2_id_raw)
+            categoria_id = int(categoria_id_raw)
+        except (TypeError, ValueError):
+            flash("Dados inválidos.", "error")
+            return redirect(url_for("inscricoes.nova_inscricao"))
 
         atleta1 = Atleta.query.get(atleta1_id)
         atleta2 = Atleta.query.get(atleta2_id)
         categoria = Categoria.query.get(categoria_id)
 
-        if not atleta1 or not atleta2 or not categoria or not evento_id:
+        if not atleta1 or not atleta2 or not categoria:
             flash("Dados inválidos.", "error")
             return redirect(url_for("inscricoes.nova_inscricao"))
 
@@ -69,7 +83,7 @@ def nova_inscricao():
             flash("Pelo menos um dos atletas da dupla deve ser residente de Eldorado do Sul.", "error")
             return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
 
-        if categoria.evento_id != int(evento_id):
+        if categoria.evento_id != evento_id_int:
             flash("A categoria selecionada não pertence ao evento escolhido.", "error")
             return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
 
@@ -115,15 +129,15 @@ def nova_inscricao():
 
         for inscricao in inscricoes_categoria:
             atletas_existentes = {inscricao.atleta1_id, inscricao.atleta2_id}
-            novos_atletas = {int(atleta1_id), int(atleta2_id)}
+            novos_atletas = {atleta1_id, atleta2_id}
             if atletas_existentes == novos_atletas:
                 flash("Essa dupla já está inscrita nesta categoria.", "error")
                 return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
 
         for inscricao in inscricoes_categoria:
             if (
-                int(atleta1_id) in [inscricao.atleta1_id, inscricao.atleta2_id] or
-                int(atleta2_id) in [inscricao.atleta1_id, inscricao.atleta2_id]
+                atleta1_id in [inscricao.atleta1_id, inscricao.atleta2_id] or
+                atleta2_id in [inscricao.atleta1_id, inscricao.atleta2_id]
             ):
                 flash("Um dos atletas já está inscrito para competir nesta categoria.", "error")
                 return redirect(url_for("inscricoes.nova_inscricao", evento=evento_id))
@@ -185,9 +199,6 @@ def excluir_inscricao(inscricao_id):
     return redirect(url_for("inscricoes.listar_inscricoes"))
 
 
-
-
-
 @inscricoes_bp.route("/minhas-inscricoes")
 def minhas_inscricoes():
     if session.get("usuario_tipo") != "atleta":
@@ -210,10 +221,6 @@ def minhas_inscricoes():
         inscricoes=inscricoes,
         atleta=atleta
     )
-
-
-
-
 
 
 @inscricoes_bp.route("/minha-inscricao/nova", methods=["GET", "POST"])
@@ -241,6 +248,11 @@ def nova_inscricao_atleta():
     selected_evento_id = request.args.get("evento")
     if selected_evento_id is None:
         selected_evento_id = str(eventos[0].id)
+    else:
+        try:
+            selected_evento_id = str(int(selected_evento_id))
+        except (TypeError, ValueError):
+            selected_evento_id = str(eventos[0].id)
 
     categorias = Categoria.query.filter_by(evento_id=int(selected_evento_id)).all()
 
@@ -248,17 +260,25 @@ def nova_inscricao_atleta():
 
     if request.method == "POST":
         evento_id = request.form.get("evento")
-        parceiro_id = request.form.get("parceiro")
-        categoria_id = request.form.get("categoria")
+        parceiro_id_raw = request.form.get("parceiro")
+        categoria_id_raw = request.form.get("categoria")
+
+        try:
+            evento_id_int = int(evento_id)
+            parceiro_id = int(parceiro_id_raw)
+            categoria_id = int(categoria_id_raw)
+        except (TypeError, ValueError):
+            flash("Dados inválidos.", "error")
+            return redirect(url_for("inscricoes.nova_inscricao_atleta"))
 
         parceiro = Atleta.query.get(parceiro_id)
         categoria = Categoria.query.get(categoria_id)
 
-        if not parceiro or not categoria or not evento_id:
+        if not parceiro or not categoria:
             flash("Dados inválidos.", "error")
             return redirect(url_for("inscricoes.nova_inscricao_atleta"))
 
-        if categoria.evento_id != int(evento_id):
+        if categoria.evento_id != evento_id_int:
             flash("A categoria selecionada não pertence ao evento escolhido.", "error")
             return redirect(url_for("inscricoes.nova_inscricao_atleta", evento=evento_id))
 

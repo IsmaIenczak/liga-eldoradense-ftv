@@ -79,6 +79,26 @@ def normalizar_cpf(cpf):
     return cpf_limpo
 
 
+def normalizar_cep(cep):
+    if not cep:
+        return None
+
+    cep = cep.strip()
+    cep_limpo = re.sub(r"\D", "", cep)
+
+    if len(cep_limpo) != 8:
+        return None
+
+    return cep_limpo
+
+
+def normalizar_email(email):
+    if not email:
+        return None
+
+    return email.strip().lower()
+
+
 def formatar_cpf(cpf):
     if not cpf:
         return "Não informado"

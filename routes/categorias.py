@@ -16,9 +16,33 @@ def nova_categoria():
 
     if request.method == "POST":
         modalidade = request.form.get("modalidade", "").strip().lower()
-        nivel_id = int(request.form.get("nivel"))
-        evento_id = request.form.get("evento")
+        nivel_id_raw = request.form.get("nivel")
+        evento_id_raw = request.form.get("evento")
         vagas = request.form.get("vagas")
+
+        if modalidade not in ["masculino", "feminino", "misto"]:
+            flash("Escolha uma modalidade válida.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
+
+        try:
+            nivel_id = int(nivel_id_raw)
+        except (TypeError, ValueError):
+            flash("Selecione um nível válido.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
+
+        if not Nivel.query.get(nivel_id):
+            flash("Selecione um nível válido.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
+
+        try:
+            evento_id = int(evento_id_raw)
+        except (TypeError, ValueError):
+            flash("Selecione um evento válido.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
+
+        if not Evento.query.get(evento_id):
+            flash("Selecione um evento válido.", "error")
+            return redirect(url_for("categorias.nova_categoria"))
 
         if not vagas or not vagas.isdigit():
             flash("O número de vagas deve ser um número inteiro válido.", "error")
@@ -35,7 +59,7 @@ def nova_categoria():
             return redirect(url_for("categorias.nova_categoria"))
 
         existente = Categoria.query.filter_by(
-            evento_id=int(evento_id),
+            evento_id=evento_id,
             modalidade=modalidade,
             nivel_id=nivel_id
         ).first()
@@ -48,7 +72,7 @@ def nova_categoria():
             modalidade=modalidade,
             nivel_id=nivel_id,
             vagas=vagas,
-            evento_id=int(evento_id)
+            evento_id=evento_id
         )
 
         db.session.add(nova)
@@ -95,9 +119,33 @@ def editar_categoria(categoria_id):
 
     if request.method == "POST":
         nova_modalidade = request.form.get("modalidade", "").strip().lower()
-        novo_nivel_id = int(request.form.get("nivel"))
-        novo_evento_id = int(request.form.get("evento"))
+        novo_nivel_id_raw = request.form.get("nivel")
+        novo_evento_id_raw = request.form.get("evento")
         novas_vagas = request.form.get("vagas")
+
+        if nova_modalidade not in ["masculino", "feminino", "misto"]:
+            flash("Escolha uma modalidade válida.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        try:
+            novo_nivel_id = int(novo_nivel_id_raw)
+        except (TypeError, ValueError):
+            flash("Selecione um nível válido.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        if not Nivel.query.get(novo_nivel_id):
+            flash("Selecione um nível válido.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        try:
+            novo_evento_id = int(novo_evento_id_raw)
+        except (TypeError, ValueError):
+            flash("Selecione um evento válido.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
+
+        if not Evento.query.get(novo_evento_id):
+            flash("Selecione um evento válido.", "error")
+            return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
         if not novas_vagas or not novas_vagas.isdigit():
             flash("O número de vagas deve ser um número inteiro válido.", "error")
@@ -138,8 +186,6 @@ def editar_categoria(categoria_id):
                 sexo1 = atleta1.sexo.strip().lower()
                 sexo2 = atleta2.sexo.strip().lower()
 
-                nova_modalidade_normalizada = nova_modalidade.strip().lower()
-
                 if atleta1.nivel_id != novo_nivel_id or atleta2.nivel_id != novo_nivel_id:
                     flash(
                         f"Não é possível alterar esta categoria: a inscrição da dupla {atleta1.nome} e {atleta2.nome} ficaria com nível incompatível.",
@@ -147,7 +193,7 @@ def editar_categoria(categoria_id):
                     )
                     return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
-                if nova_modalidade_normalizada == "masculino":
+                if nova_modalidade == "masculino":
                     if sexo1 != "masculino" or sexo2 != "masculino":
                         flash(
                             f"Não é possível alterar esta categoria: a dupla {atleta1.nome} e {atleta2.nome} não se encaixa em categoria masculina.",
@@ -155,7 +201,7 @@ def editar_categoria(categoria_id):
                         )
                         return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
-                elif nova_modalidade_normalizada == "feminino":
+                elif nova_modalidade == "feminino":
                     if sexo1 != "feminino" or sexo2 != "feminino":
                         flash(
                             f"Não é possível alterar esta categoria: a dupla {atleta1.nome} e {atleta2.nome} não se encaixa em categoria feminina.",
@@ -163,7 +209,7 @@ def editar_categoria(categoria_id):
                         )
                         return redirect(url_for("categorias.editar_categoria", categoria_id=categoria.id))
 
-                elif nova_modalidade_normalizada == "misto":
+                elif nova_modalidade == "misto":
                     if sexo1 == sexo2:
                         flash(
                             f"Não é possível alterar esta categoria: a dupla {atleta1.nome} e {atleta2.nome} deixaria de se encaixar em categoria mista.",

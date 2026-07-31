@@ -8,9 +8,6 @@ from utils import admin_required, normalizar_telefone, normalizar_cpf
 atletas_bp = Blueprint("atletas", __name__)
 
 
-
-
-
 @atletas_bp.route("/atletas")
 @admin_required
 def listar_atletas():
@@ -26,12 +23,9 @@ def listar_atletas():
     return render_template("atletas.html", atletas=atletas, status=status)
 
 
-
-
-
 @atletas_bp.route("/atletas/novo", methods=["GET", "POST"])
 @admin_required
-def cadastrar_atleta(): 
+def cadastrar_atleta():
     niveis = Nivel.query.order_by(Nivel.nome.asc()).all()
 
     if request.method == "POST":
@@ -44,7 +38,6 @@ def cadastrar_atleta():
                 erro="CPF deve conter exatamente 11 números válidos.",
                 niveis=niveis
             )
-        
 
         telefone = normalizar_telefone(request.form.get("telefone"))
 
@@ -54,14 +47,51 @@ def cadastrar_atleta():
                 erro="Informe um telefone válido com DDD.",
                 niveis=niveis
             )
-        
+
+        nome = nome.strip() if nome else None
         sexo = request.form.get("sexo")
-        nivel_id = request.form.get("nivel")
+        nivel_id_raw = request.form.get("nivel")
         residente_eldorado = request.form.get("residente_eldorado")
 
         residente_eldorado = True if residente_eldorado == "sim" else False
 
-    
+        if not nome:
+            return render_template(
+                "novo_atleta.html",
+                erro="Informe um nome válido.",
+                niveis=niveis
+            )
+
+        if sexo not in ["masculino", "feminino"]:
+            return render_template(
+                "novo_atleta.html",
+                erro="Informe um sexo válido.",
+                niveis=niveis
+            )
+
+        if not nivel_id_raw:
+            return render_template(
+                "novo_atleta.html",
+                erro="Selecione um nível.",
+                niveis=niveis
+            )
+
+        try:
+            nivel_id = int(nivel_id_raw)
+        except (TypeError, ValueError):
+            return render_template(
+                "novo_atleta.html",
+                erro="Selecione um nível válido.",
+                niveis=niveis
+            )
+
+        if not Nivel.query.get(nivel_id):
+            return render_template(
+                "novo_atleta.html",
+                erro="Selecione um nível válido.",
+                niveis=niveis
+            )
+
         cpf_existente = Atleta.query.filter_by(cpf=cpf).first()
         if cpf_existente:
             return render_template(
@@ -71,13 +101,13 @@ def cadastrar_atleta():
             )
 
         novo_atleta = Atleta(
-        nome=nome,
-        cpf=cpf,
-        telefone=telefone,
-        sexo=sexo,
-        nivel_id=int(nivel_id),
-        residente_eldorado=residente_eldorado,
-        nivel_validado=False
+            nome=nome,
+            cpf=cpf,
+            telefone=telefone,
+            sexo=sexo,
+            nivel_id=nivel_id,
+            residente_eldorado=residente_eldorado,
+            nivel_validado=False
         )
 
         db.session.add(novo_atleta)
@@ -86,10 +116,6 @@ def cadastrar_atleta():
         return redirect(url_for("atletas.listar_atletas"))
 
     return render_template("novo_atleta.html", niveis=niveis)
-
-
-
-
 
 
 @atletas_bp.route("/atletas/excluir/<int:atleta_id>", methods=["POST"])
@@ -115,10 +141,6 @@ def excluir_atleta(atleta_id):
     return redirect(url_for("atletas.listar_atletas"))
 
 
-
-
-
-
 @atletas_bp.route("/atletas/editar/<int:atleta_id>", methods=["GET", "POST"])
 @admin_required
 def editar_atleta(atleta_id):
@@ -132,7 +154,7 @@ def editar_atleta(atleta_id):
         if novo_cpf is None:
             flash("CPF deve conter exatamente 11 números válidos.", "error")
             return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
-        
+
         novo_telefone = normalizar_telefone(request.form.get("telefone"))
 
         if novo_telefone is None:
@@ -140,10 +162,31 @@ def editar_atleta(atleta_id):
             return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
 
         novo_sexo = request.form.get("sexo")
-        novo_nivel_id = int(request.form.get("nivel"))
+        novo_nivel_id_raw = request.form.get("nivel")
         novo_residente_eldorado = request.form.get("residente_eldorado")
         novo_residente_eldorado = True if novo_residente_eldorado == "sim" else False
 
+        if not novo_nome or not novo_nome.strip():
+            flash("Informe um nome válido.", "error")
+            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
+
+        if novo_sexo not in ["masculino", "feminino"]:
+            flash("Informe um sexo válido.", "error")
+            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
+
+        if not novo_nivel_id_raw:
+            flash("Selecione um nível.", "error")
+            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
+
+        try:
+            novo_nivel_id = int(novo_nivel_id_raw)
+        except (TypeError, ValueError):
+            flash("Selecione um nível válido.", "error")
+            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
+
+        if not Nivel.query.get(novo_nivel_id):
+            flash("Selecione um nível válido.", "error")
+            return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
 
         cpf_existente = Atleta.query.filter_by(cpf=novo_cpf).first()
         if cpf_existente and cpf_existente.id != atleta.id:
@@ -211,7 +254,7 @@ def editar_atleta(atleta_id):
                     )
                     return redirect(url_for("atletas.editar_atleta", atleta_id=atleta_id))
 
-        atleta.nome = novo_nome
+        atleta.nome = novo_nome.strip()
         atleta.cpf = novo_cpf
         atleta.telefone = novo_telefone
         atleta.sexo = novo_sexo
@@ -226,9 +269,6 @@ def editar_atleta(atleta_id):
     return render_template("editar_atleta.html", atleta=atleta, niveis=niveis)
 
 
-
-
-
 @atletas_bp.route("/atletas/validar-nivel/<int:atleta_id>", methods=["POST"])
 @admin_required
 def validar_nivel_atleta(atleta_id):
@@ -239,10 +279,6 @@ def validar_nivel_atleta(atleta_id):
 
     flash(f"Nível do atleta {atleta.nome} validado com sucesso!", "success")
     return redirect(url_for("atletas.listar_atletas"))
-
-
-
-
 
 
 @atletas_bp.route("/atletas/desvalidar-nivel/<int:atleta_id>", methods=["POST"])
