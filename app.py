@@ -90,22 +90,22 @@ app.register_blueprint(niveis_bp)
 app.register_blueprint(auth_bp)
 
 
-
-with app.app_context():
+@app.cli.command("seed-admin")
+def seed_admin():
+    """Cria o usuário admin padrão, se ainda não existir."""
     admin_existente = Usuario.query.filter_by(email="admin@admin.com").first()
 
-    if not admin_existente:
-        admin = Usuario(
-            email="admin@admin.com",
-            tipo="admin"
-        )
-        admin.set_senha("Admin@Liga2026!")
+    if admin_existente:
+        print("Admin já existe — nada a fazer.")
+        return
 
-        db.session.add(admin)
-        db.session.commit()
+    admin = Usuario(email="admin@admin.com", tipo="admin")
+    admin.set_senha("Admin@Liga2026!")
 
-        print("Admin criado com sucesso: admin@admin.com")
+    db.session.add(admin)
+    db.session.commit()
 
+    print("Administrador padrão criado com sucesso.")
 
 
 if __name__ == "__main__":
