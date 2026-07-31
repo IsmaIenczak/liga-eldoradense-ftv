@@ -9,6 +9,12 @@ Sistema web full-stack para gestão de torneios de futevôlei, construído com *
 <a id="-português"></a>
 ## 🇧🇷 Português
 
+## 🚧 Project Status
+
+Em desenvolvimento ativo.
+
+Novas funcionalidades estão sendo implementadas continuamente.
+
 ### 🚀 Visão geral
 
 A aplicação permite:
@@ -120,7 +126,7 @@ Outros arquivos importantes:
 ### 🖥️ Rodando o projeto
 
 ```bash
-git clone https://github.com/seu-usuario/liga-eldoradense-ftv.git
+git clone https://github.com/IsmaIenczak/liga-eldoradense-ftv.git
 cd liga-eldoradense-ftv
 
 python -m venv .venv
@@ -133,7 +139,16 @@ pip install -r requirements.txt
 Crie um arquivo `.env` na raiz do projeto:
 
 ```
-SECRET_KEY=sua_chave_secreta_aqui
+Copie o arquivo:
+
+.env.example
+
+para
+
+.env
+
+e ajuste os valores de "SECRET_KEY=your_secret_key_here" conforme necessário.
+
 ```
 
 Aplique as migrations para criar o banco de dados:
@@ -153,6 +168,10 @@ Inicie a aplicação:
 ```bash
 flask run
 ```
+A aplicação estará disponível em:
+
+http://127.0.0.1:5000
+
 
 ### 🔑 Administrador padrão
 
@@ -189,6 +208,13 @@ Senha: Admin@Liga2026!
 
 <a id="-english"></a>
 ## 🇬🇧 English
+
+
+## 🚧 Project Status
+
+Under active development.
+
+New features are being continuously implemented.
 
 ### 🚀 Overview
 
@@ -313,8 +339,17 @@ pip install -r requirements.txt
 
 Create a `.env` file in the project root:
 
-```
-SECRET_KEY=your_secret_key_here
+Copy the file:
+
+.env.example
+
+to
+
+.env
+
+and adjust the values "SECRET_KEY=your_secret_key_here" ​​as needed.
+
+
 ```
 
 Apply the database migrations:
